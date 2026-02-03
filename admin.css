@@ -1,0 +1,519 @@
+
+
+:root {
+  --primary: #fea501;
+  --black: #000;
+  --red: #e63946;
+  --white: #fff;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Poppins;
+}
+body {
+  background: #f4f4f4;
+}
+/* SIDEBAR */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 250px;
+  height: 100vh;
+  background: var(--black);
+  color: var(--white);
+  padding: 20px;
+  transition: 0.4s;
+  z-index: 1000;
+}
+.sidebar h2 {
+  color: var(--primary);
+  text-align: center;
+  margin-bottom: 25px;
+}
+.sidebar li {
+  list-style: none;
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-bottom: 14px; /* ✅ MORE SPACE BETWEEN LINKS */
+}
+.sidebar li:hover,
+.sidebar li.active {
+  background: var(--primary);
+  color: var(--black);
+}
+.logout:hover {
+  background: var(--red) !important;
+}
+/* MAIN */
+.main {
+  margin-left: 250px;
+  padding: 20px;
+  transition: 0.4s;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.menu-btn {
+  background: var(--primary);
+  border: none;
+  font-size: 20px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+/* PANELS */
+.panel {
+  display: none;
+  background: var(--white);
+  padding: 20px;
+  border-radius: 12px;
+  animation: fadeUp 0.4s ease;
+}
+.panel.show {
+  display: block;
+}
+/* STATS */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+.stat-card {
+  padding: 20px;
+  border-left: 6px solid var(--primary);
+  background: var(--white);
+  border-radius: 10px;
+}
+/* FORM */
+.form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+.form input {
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+.form button {
+  background: var(--primary);
+  border: none;
+  cursor: pointer;
+}
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  background: var(--black);
+  color: var(--white);
+}
+td,
+th {
+  padding: 10px;
+  text-align: center;
+}
+.action-btn {
+  padding: 6px 10px;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+.edit {
+  background: var(--primary);
+}
+.delete {
+  background: var(--red);
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* MOBILE */
+@media (max-width: 768px) {
+  .sidebar {
+    left: -250px;
+  }
+  .sidebar.open {
+    left: 0;
+  }
+  .main {
+    margin-left: 0;
+  }
+  /* 🔥 INCREASE ADD BUTTON HEIGHT ON MOBILE */
+  .form button {
+    height: 52px; /* increase height */
+    font-size: 16px; /* better readability */
+    border-radius: 10px; /* smooth look */
+  }
+}
+@media (max-width: 768px) {
+  .sidebar li {
+    padding: 18px; /* taller link */
+    margin-bottom: 18px; /* more gap */
+    font-size: 16px; /* easier to tap */
+  }
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+th,
+td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+.course-row img {
+  max-width: 120px;
+  border-radius: 6px;
+}
+.action-btn {
+  padding: 5px 10px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.action-btn.edit {
+  background-color: #4caf50;
+  color: white;
+}
+.action-btn.delete {
+  background-color: #f44336;
+  color: white;
+}
+/* ===============================
+   PLACEMENTS SECTION
+================================ */
+.placements-headings,
+.placement-card {
+  display: grid;
+  grid-template-columns: 80px 1.2fr 1.2fr 1.2fr 1fr 120px;
+  align-items: center;
+  gap: 10px;
+  grid-template-columns: repeat(6, 1fr); /* ✅ ALL SAME WIDTH */
+}
+/* Headings row */
+.placements-headings {
+  background: var(--black);
+  color: var(--white);
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 20px;
+  grid-template-columns: repeat(6, 1fr); /* ✅ ALL SAME WIDTH */
+}
+.placements-headings .heading {
+  font-weight: 600;
+  font-size: 14px;
+}
+/* Placement card */
+.placement-card {
+  background: var(--white);
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  animation: fadeUp 0.3s ease;
+}
+/* Cells */
+.placement-card .cell {
+  font-size: 14px;
+  color: var(--black);
+  word-break: break-word;
+}
+/* Image */
+.placement-img {
+  width: 65px;
+  height: auto;
+  border-radius: 6px;
+  object-fit: cover;
+}
+/* Action buttons */
+.placement-card .actions {
+  display: flex;
+  gap: 8px;
+}
+.placement-card button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 13px;
+}
+.placement-card button:first-child {
+  background: var(--primary);
+}
+.placement-card button:last-child {
+  background: var(--red);
+}
+/* ===============================
+   RESPONSIVE (MOBILE)
+================================ */
+@media (max-width: 768px) {
+  /* Hide table headings */
+  .placements-headings {
+    display: none;
+  }
+  /* Card layout for mobile */
+  .placement-card {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .placement-img {
+    width: 100%;
+    max-height: 180px;
+    object-fit: contain;
+  }
+  .placement-card .cell {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .placement-card .cell::before {
+    font-weight: 600;
+    color: #555;
+  }
+  .placement-name::before {
+    content: "Name";
+  }
+  .placement-role::before {
+    content: "Role";
+  }
+  .placement-company::before {
+    content: "Company";
+  }
+  .placement-package::before {
+    content: "Package";
+  }
+  .placement-card .actions {
+    border-bottom: none;
+    justify-content: flex-start;
+  }
+}
+/* ===============================
+   TRAINING SECTION (Same as Placements)
+================================ */
+/* Headings row */
+.training-headings {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* ✅ ALL SAME WIDTH */
+  align-items: center;
+  gap: 10px;
+  background: var(--black);
+  color: var(--white);
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 20px;
+  font-weight: 600;
+}
+.training-headings .heading {
+  font-weight: 600;
+  font-size: 14px;
+}
+/* Training Card */
+.training-card {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* ✅ ALL SAME WIDTH */ /* Icon | Program | Actions */
+  align-items: center;
+  gap: 10px;
+  background: var(--white);
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  animation: fadeUp 0.3s ease;
+}
+/* Cells */
+.training-card .cell {
+  font-size: 14px;
+  color: var(--black);
+  word-break: break-word;
+}
+/* Icon */
+.training-card .training-icon i {
+  font-size: 24px;
+  display: block;
+  width: 65px;
+  height: 65px;
+  text-align: center;
+  line-height: 65px;
+  border-radius: 6px;
+  background: #f4f4f4;
+}
+/* Action buttons */
+.training-card .actions {
+  display: flex;
+  gap: 8px;
+}
+.training-card button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 13px;
+}
+.training-card button.edit {
+  background: #4caf50; /* green edit */
+}
+.training-card button.delete {
+  background: #f44336; /* red delete */
+}
+/* ===============================
+   RESPONSIVE (MOBILE)
+================================ */
+@media (max-width: 768px) {
+  /* Hide headings */
+  .training-headings {
+    display: none;
+  }
+  /* Card layout for mobile */
+  .training-card {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .training-card .cell {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .training-card .cell::before {
+    font-weight: 600;
+    color: #555;
+  }
+  .training-icon::before {
+    content: "Icon";
+  }
+  .training-title::before {
+    content: "Program";
+  }
+  .training-card .actions {
+    border-bottom: none;
+    justify-content: flex-start;
+  }
+  .training-card .training-icon i {
+    width: auto;
+    height: auto;
+    line-height: normal;
+    font-size: 28px;
+  }
+}
+/* Fade animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* ===============================
+   CONTACT CARDS (Same as Training)
+================================ */
+/* Headings row */
+.contact-headings {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* Email | Mobile | Instagram | LinkedIn | Actions */
+  align-items: center;
+  gap: 10px;
+  background: var(--black);
+  color: var(--white);
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 20px;
+  font-weight: 600;
+}
+.contact-headings .heading {
+  font-weight: 600;
+  font-size: 14px;
+}
+/* Contact Card */
+.contact-card {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* Email | Mobile | Instagram | LinkedIn | Actions */
+  align-items: center;
+  gap: 10px;
+  background: var(--white);
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  animation: fadeUp 0.3s ease;
+}
+/* Cells */
+.contact-card .cell {
+  font-size: 14px;
+  color: var(--black);
+  word-break: break-word;
+}
+/* Action buttons */
+.contact-card .actions {
+  display: flex;
+  gap: 8px;
+}
+.contact-card button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 13px;
+}
+.contact-card button.edit {
+  background: #4caf50; /* green edit */
+}
+.contact-card button.delete {
+  background: #f44336; /* red delete */
+}
+/* Fade animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* ===============================
+   RESPONSIVE (MOBILE)
+================================ */
+@media (max-width: 768px) {
+  /* Hide headings */
+  .contact-headings {
+    display: none;
+  }
+  /* Card layout for mobile */
+  .contact-card {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .contact-card .cell {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed #ddd;
+  }
+  .contact-card .cell::before {
+    font-weight: 600;
+    color: #555;
+  }
+  .contact-email::before { content: "Email"; }
+  .contact-mobile::before { content: "Mobile"; }
+  .contact-instagram::before { content: "Instagram"; }
+  .contact-linkedin::before { content: "LinkedIn"; }
+  .contact-card .actions {
+    border-bottom: none;
+    justify-content: flex-start;
+  }
+}

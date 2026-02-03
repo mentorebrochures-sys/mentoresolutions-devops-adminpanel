@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <h2>Mentore Solution</h2>
+    <ul>
+      <li onclick="showPanel('dashboard', this)"><i class="fa fa-chart-line"></i> Dashboard</li>
+      <li onclick="showPanel('certificate', this)"><i class="fa fa-certificate"></i> Certificate</li>
+      <li onclick="showPanel('courses', this)"><i class="fa fa-book"></i> Courses</li>
+      <li onclick="showPanel('placements', this)"><i class="fa fa-user-graduate"></i> Placements</li>
+      <li onclick="showPanel('training', this)"><i class="fa fa-chalkboard"></i> Training</li>
+      <li onclick="showPanel('contact', this)"><i class="fa fa-envelope"></i> Contact</li>
+      <li class="logout"><i class="fa fa-sign-out-alt"></i> Logout</li>
+    </ul>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+      <h1>Admin Panel</h1>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="panel show">
+      <div class="stats">
+        <div class="stat-card"><h3>Courses</h3><p>12</p></div>
+        <div class="stat-card"><h3>Students</h3><p>480+</p></div>
+        <div class="stat-card"><h3>Placements</h3><p>120+</p></div>
+      </div>
+    </section>
+
+    <!-- CERTIFICATES -->
+    <section id="certificate" class="panel">
+      <h2>Certificates</h2>
+      <div class="form">
+        <input type="file" id="certImage" accept="image/*">
+        <button type="button" id="addCertBtn">Save Certificate</button>
+      </div>
+      <table>
+        <thead><tr><th>Certificate Image</th><th>Action</th></tr></thead>
+        <tbody id="certificateTable"></tbody>
+      </table>
+    </section>
+
+    <!-- COURSES -->
+    <section id="courses" class="panel">
+      <h2>Manage Courses</h2>
+      <div class="form">
+        <input id="courseDuration" type="text" placeholder="Total Duration">
+        <input id="courseStartDate" type="date" placeholder="Start Date">
+        <button onclick="addCourse()">Add Course</button>
+      </div>
+      <table>
+        <thead><tr><th>Duration</th><th>Start Date</th><th>Action</th></tr></thead>
+        <tbody id="coursesTable"></tbody>
+      </table>
+    </section>
+
+    <!-- PLACEMENTS -->
+    <section id="placements" class="panel">
+      <h2>Manage Placements</h2>
+      <div class="form">
+        <input id="studentName" placeholder="Student Name">
+        <input id="studentCompany" placeholder="Company">
+        <input id="studentRole" placeholder="Role">
+        <input id="studentPackage" placeholder="Package">
+        <input type="file" id="studentImage" accept="image/*">
+        <button type="button" id="addBtn">Add Placement</button>
+      </div>
+      <div class="placements-headings">
+        <span class="heading">Image</span>
+        <span class="heading">Name</span>
+        <span class="heading">Role</span>
+        <span class="heading">Company</span>
+        <span class="heading">Package</span>
+        <span class="heading">Action</span>
+      </div>
+      <div id="placementsContainer" class="placements-cards"></div>
+    </section>
+
+    <!-- TRAINING -->
+    <section id="training" class="panel">
+      <h2>Training</h2>
+      <div class="form">
+        <input id="t1" placeholder="FontAwesome Icon (e.g. fas fa-cloud)">
+        <input id="t2" placeholder="Training Name">
+        <button type="button" id="addBtnTraining">Add</button>
+      </div>
+      <div class="training-headings">
+        <span class="heading">Icon</span>
+        <span class="heading">Training Name</span>
+        <span class="heading">Action</span>
+      </div>
+      <div id="trainingTable" class="training-cards"></div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="panel">
+      <h2>Contact Enquiries</h2>
+      <div class="form">
+        <input id="m2" placeholder="Email">
+        <input id="m4" placeholder="Mobile">
+        <input id="m5" placeholder="Instagram">
+        <input id="m6" placeholder="LinkedIn">
+        <button type="button" id="addBtnContact">Add</button>
+      </div>
+      <div id="contactTable" class="contact-cards"></div>
+    </section>
+  </main>
+
+  <script src="./admin.js"></script>
+</body>
+</html>
