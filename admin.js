@@ -96,12 +96,12 @@ function editRow(btn) {
 // Certificate Section Admin JS
 // ------------------------------
 (() => {
-  // तुमच्या बॅकएंडची URL
+  // १. तुमच्या बॅकएंडची बरोबर URL
   const API_URL = `${BASE_URL}/api/certificates`;
   
-  // तुमच्या सुपबेस प्रोजेक्टची माहिती (इमेज दाखवण्यासाठी लागते)
-  // टीप: तुमच्या सुपबेस URL मधील प्रोजेक्ट आयडी इथे टाका
-  const SUPABASE_PROJECT_ID = "jjxosflqkdcxxxxxxxx"; 
+  // २. तुमच्या सुपबेस प्रोजेक्टची खरी माहिती
+  // तुमच्या URL नुसार प्रोजेक्ट आयडी 'jjxosflqkdcgtdyhguzs' हा आहे
+  const SUPABASE_PROJECT_ID = "jjxosflqkdccgtdyhguz"; 
   const BUCKET_NAME = "certificates";
 
   let editingCertId = null;
@@ -119,6 +119,9 @@ function editRow(btn) {
     async function loadCertificates() {
       try {
         const res = await fetch(API_URL);
+        // बॅकएंड सुरू नसल्यास एरर हाताळणे
+        if (!res.ok) throw new Error("Backend not responding");
+        
         const data = await res.json();
         table.innerHTML = "";
 
@@ -131,7 +134,7 @@ function editRow(btn) {
           const row = document.createElement("tr");
           row.dataset.id = cert.id;
           
-          // इमेज URL तयार करणे: जर डेटाबेसमध्ये पूर्ण लिंक नसेल तर ती सुपबेसच्या फॉरमॅटमध्ये तयार करा
+          // इमेजची पूर्ण सुपबेस लिंक तयार करणे
           let imageUrl = cert.image;
           if (!cert.image.startsWith('http')) {
             imageUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${cert.image}`;
@@ -140,37 +143,40 @@ function editRow(btn) {
           row.innerHTML = `
             <td>
               <img src="${imageUrl}" 
-                   onerror="this.src='https://via.placeholder.com/120?text=Invalid+Path'"
-                   style="max-width:120px; border-radius:6px; display:block; margin:auto;">
+                   onerror="this.src='https://via.placeholder.com/150?text=Image+Not+Found'"
+                   style="max-width:150px; border-radius:8px; display:block; margin:auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
             </td>
-            <td>
-              <button type="button" class="action-btn edit" style="background:#ffc107; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; margin-right:5px;">Edit</button>
-              <button type="button" class="action-btn delete" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Delete</button>
+            <td style="text-align:center; vertical-align:middle;">
+              <button type="button" class="edit-btn" style="background:#ffc107; border:none; padding:8px 12px; cursor:pointer; border-radius:4px; margin-right:5px; font-weight:bold;">Edit</button>
+              <button type="button" class="delete-btn" style="background:#dc3545; color:#fff; border:none; padding:8px 12px; cursor:pointer; border-radius:4px; font-weight:bold;">Delete</button>
             </td>
           `;
 
-          // Edit बटन क्लिक केल्यावर
-          row.querySelector(".edit").addEventListener("click", () => {
+          // Edit लॉजिक
+          row.querySelector(".edit-btn").onclick = () => {
             editingCertId = cert.id;
             addBtn.innerText = "Update Certificate";
+            addBtn.style.background = "#28a745"; // हिरवा रंग अपडेटसाठी
             imageInput.scrollIntoView({ behavior: 'smooth' });
-          });
+          };
 
-          // Delete बटन क्लिक केल्यावर
-          row.querySelector(".delete").addEventListener("click", async () => {
-            if (!confirm("Are you sure you want to delete this certificate?")) return;
+          // Delete लॉजिक
+          row.querySelector(".delete-btn").onclick = async () => {
+            if (!confirm("Delete this certificate?")) return;
             try {
-              const deleteRes = await fetch(`${API_URL}/${cert.id}`, { method: "DELETE" });
-              if (deleteRes.ok) loadCertificates();
+              const delRes = await fetch(`${API_URL}/${cert.id}`, { method: "DELETE" });
+              if (delRes.ok) loadCertificates();
+              else alert("Delete failed!");
             } catch (err) {
               console.error("Delete error:", err);
             }
-          });
+          };
 
           table.appendChild(row);
         });
       } catch (err) {
-        console.error("Certificate load error:", err);
+        console.error("Load error:", err);
+        table.innerHTML = `<tr><td colspan="2" style="color:red; text-align:center;">Server error. Please check if backend is running.</td></tr>`;
       }
     }
 
@@ -181,8 +187,9 @@ function editRow(btn) {
       e.preventDefault(); 
       const file = imageInput.files[0];
       
+      // नवीन फाईल निवडली नसेल आणि आपण नवीन ॲड करत असू तर रोखणे
       if (!editingCertId && !file) {
-        alert("Please select certificate image");
+        alert("Please select an image file first.");
         return;
       }
 
@@ -191,7 +198,7 @@ function editRow(btn) {
 
       try {
         addBtn.disabled = true;
-        addBtn.innerText = "Uploading...";
+        addBtn.innerText = editingCertId ? "Updating..." : "Uploading...";
 
         const method = editingCertId ? "PUT" : "POST";
         const url = editingCertId ? `${API_URL}/${editingCertId}` : API_URL;
@@ -202,21 +209,26 @@ function editRow(btn) {
         });
 
         if (response.ok) {
-          imageInput.value = "";
+          imageInput.value = ""; // फाईल इनपुट रिकामे करणे
           editingCertId = null;
           addBtn.innerText = "Save Certificate";
+          addBtn.style.background = ""; // मूळ रंग
           loadCertificates();
+          alert(method === "POST" ? "Added successfully!" : "Updated successfully!");
         } else {
-          alert("Failed to save. Check backend console.");
+          const errData = await response.json();
+          alert("Error: " + (errData.error || "Upload failed"));
         }
       } catch (err) {
         console.error("Save error:", err);
+        alert("Connection error!");
       } finally {
         addBtn.disabled = false;
-        if(!editingCertId) addBtn.innerText = "Save Certificate";
+        if (!editingCertId) addBtn.innerText = "Save Certificate";
       }
     });
 
+    // सुरुवातीला लोड करणे
     loadCertificates();
   });
 })();
