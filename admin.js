@@ -226,7 +226,6 @@ function editRow(btn) {
         addBtn.disabled = false;
         if (!editingCertId) addBtn.innerText = "Save Certificate";
       }
-      console.log("Backend कडून आलेला डेटा:", data);
     });
 
     loadCertificates();
