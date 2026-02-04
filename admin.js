@@ -682,30 +682,51 @@ async function deleteTraining(btn) {
 // SINGLE CONTACT ADMIN JS
 // ===============================
 (() => {
+  // BASE_URL chi khaatri kara (Local sathi http://localhost:5000)
   const CONTACT_API = `${BASE_URL}/api/contacts`;
+  let currentContactId = null; // Update sathi ID lagel
 
   document.addEventListener("DOMContentLoaded", () => {
     const saveBtn = document.getElementById("addBtnContact");
     if (!saveBtn) return;
 
     // ------------------------------
-    // 1. LOAD SINGLE CONTACT
+    // 1. LOAD & DISPLAY CONTACTS
     // ------------------------------
     async function loadContact() {
       try {
         const res = await fetch(CONTACT_API);
         const data = await res.json();
+        const container = document.getElementById("contactTable");
 
-        // बॅकएंड ॲरे (Array) देतो, आपण पहिला रेकॉर्ड (Index 0) वापरू
+        if (!container) return;
+        container.innerHTML = ""; // Container clear kara
+
         if (data && data.length > 0) {
+          // Apan pahila record inputs madhe bharu (Editing sathi)
           const c = data[0];
+          currentContactId = c.id; 
+          
           document.getElementById("m2").value = c.email || "";
           document.getElementById("m4").value = c.mobile || "";
           document.getElementById("m5").value = c.instagram || "";
           document.getElementById("m6").value = c.linkedin || "";
           
-          // जर डेटा असेल तर बटनचा टेक्स्ट बदलूया
           saveBtn.innerText = "Update Contact";
+
+          // Card Swarupat Frontend la dakhavne
+          data.forEach(item => {
+              const card = document.createElement("div");
+              card.className = "contact-card-item"; // Tumcha CSS class
+              card.style = "border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 8px; background: #f9f9f9;";
+              card.innerHTML = `
+                <p><strong>Email:</strong> ${item.email}</p>
+                <p><strong>Mobile:</strong> ${item.mobile}</p>
+                <p><strong>Insta:</strong> ${item.instagram || 'N/A'}</p>
+                <p><strong>LinkedIn:</strong> ${item.linkedin || 'N/A'}</p>
+              `;
+              container.appendChild(card);
+          });
         }
       } catch (err) {
         console.error("Error loading contact:", err);
@@ -734,16 +755,26 @@ async function deleteTraining(btn) {
         saveBtn.disabled = true;
         saveBtn.innerText = "Saving...";
 
-        // बॅकएंडमध्ये POST मेथड 'Upsert' (Update or Insert) करते
-        const res = await fetch(CONTACT_API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+        let res;
+        if (currentContactId) {
+          // Jar ID asel tar UPDATE (PUT) kara
+          res = await fetch(`${CONTACT_API}/${currentContactId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          // Jar ID nasel tar NEW (POST) kara
+          res = await fetch(CONTACT_API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+        }
 
         if (res.ok) {
           alert("Contact information updated successfully ✅");
-          loadContact(); // डेटा पुन्हा रिफ्रेश करा
+          loadContact(); // List refresh kara
         } else {
           const errData = await res.json();
           alert("Error: " + (errData.error || "Failed to save"));
@@ -753,7 +784,7 @@ async function deleteTraining(btn) {
         alert("Server is not responding.");
       } finally {
         saveBtn.disabled = false;
-        saveBtn.innerText = "Update Contact";
+        saveBtn.innerText = currentContactId ? "Update Contact" : "Add";
       }
     });
 
