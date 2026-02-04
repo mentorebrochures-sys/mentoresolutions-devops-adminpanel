@@ -397,143 +397,138 @@ function editRow(btn) {
   });
 })();
 
-
-// 1. खात्री करा की BASE_URL वरती एकदाच डिफाइन केली आहे
+// ============================
+// Courses
+// ============================
+// 1. BASE URL (Tumcha backend URL ithe taka)
 const COURSE_API = `${BASE_URL}/api/courses`;
 let editingCourseId = null;
 
 // ===============================
-// LOAD COURSES (Admin Table)
+// 1. DATABASE MADHUN DATA LOAD KARNE
 // ===============================
 async function loadCourses() {
-  try {
-    const res = await fetch(COURSE_API);
-    const courses = await res.json();
-    const table = document.getElementById("coursesTable");
-    
-    if (!table) return;
-    table.innerHTML = "";
+    try {
+        const res = await fetch(COURSE_API);
+        const courses = await res.json();
+        const table = document.getElementById("coursesTable");
+        
+        if (!table) return;
+        table.innerHTML = "";
 
-    if (!courses || courses.length === 0) {
-      table.innerHTML = `<tr><td colspan="3" style="text-align:center;">No courses found</td></tr>`;
-      return;
+        if (!courses || courses.length === 0) {
+            table.innerHTML = `<tr><td colspan="3" style="text-align:center;">No courses found</td></tr>`;
+            return;
+        }
+
+        courses.forEach(course => {
+            const row = document.createElement("tr");
+            row.dataset.id = course.id;
+            row.innerHTML = `
+                <td class="course-duration">${course.duration}</td>
+                <td class="course-startdate">${course.start_date}</td>
+                <td>
+                    <button class="action-btn edit" onclick="editCourse(this)" style="background:#ffc107;">Edit</button>
+                    <button class="action-btn delete" onclick="deleteCourse('${course.id}')" style="background:#dc3545; color:#fff;">Delete</button>
+                </td>
+            `;
+            table.appendChild(row);
+        });
+    } catch (err) {
+        console.error("Course load error:", err);
     }
-
-    courses.forEach(course => {
-      const row = document.createElement("tr");
-      row.dataset.id = course.id;
-      row.innerHTML = `
-        <td class="course-duration">${course.duration}</td>
-        <td class="course-startdate">${course.start_date}</td>
-        <td>
-          <button class="action-btn edit" onclick="editCourse(this)" style="background:#ffc107; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; margin-right:5px;">Edit</button>
-          <button class="action-btn delete" onclick="deleteCourse(this)" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Delete</button>
-        </td>
-      `;
-      table.appendChild(row);
-    });
-  } catch (err) {
-    console.error("Course load error:", err);
-  }
 }
 
 // ===============================
-// ADD / UPDATE COURSE
+// 2. DATA ADD KIWA UPDATE KARNE
 // ===============================
 async function addCourse() {
-  const durationInput = document.getElementById("courseDuration");
-  const startDateInput = document.getElementById("courseStartDate");
-  const addBtn = document.querySelector("#courses .form button");
+    const durationInput = document.getElementById("courseDuration");
+    const startDateInput = document.getElementById("courseStartDate");
+    const submitBtn = document.getElementById("submitBtn");
 
-  const duration = durationInput.value.trim();
-  const start_date = startDateInput.value; // बॅकएंडला 'start_date' नाव हवे आहे
+    const duration = durationInput.value.trim();
+    const start_date = startDateInput.value;
 
-  if (!duration || !start_date) {
-    alert("Please fill all fields");
-    return;
-  }
-
-  // बॅकएंडच्या स्कीम्यानुसार पेलोड (Payload)
-  const payload = { 
-    duration: duration, 
-    start_date: start_date 
-  };
-
-  try {
-    addBtn.disabled = true;
-    addBtn.innerText = "Saving...";
-
-    let response;
-    if (editingCourseId) {
-      // UPDATE (PUT)
-      response = await fetch(`${COURSE_API}/${editingCourseId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      editingCourseId = null;
-    } else {
-      // ADD (POST)
-      response = await fetch(COURSE_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+    if (!duration || !start_date) {
+        alert("Krupaya sarva mahiti bhara!");
+        return;
     }
 
-    if (response.ok) {
-      durationInput.value = "";
-      startDateInput.value = "";
-      addBtn.innerText = "Add Course";
-      loadCourses();
-    } else {
-      const errData = await response.json();
-      alert("Error: " + (errData.error || "Failed to save course"));
+    const payload = { duration, start_date };
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Saving...";
+
+        let response;
+        if (editingCourseId) {
+            // UPDATE (PUT request)
+            response = await fetch(`${COURSE_API}/${editingCourseId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            // ADD NEW (POST request)
+            response = await fetch(COURSE_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (response.ok) {
+            durationInput.value = "";
+            startDateInput.value = "";
+            editingCourseId = null;
+            submitBtn.innerText = "Add Course";
+            loadCourses(); // List refresh kara
+        } else {
+            alert("Database madhe save hot nahiye!");
+        }
+    } catch (err) {
+        console.error("Save error:", err);
+        alert("Backend server online ahe ka check kara!");
+    } finally {
+        submitBtn.disabled = false;
     }
-  } catch (err) {
-    console.error("Save error:", err);
-    alert("Check if backend is online!");
-  } finally {
-    addBtn.disabled = false;
-  }
 }
 
 // ===============================
-// EDIT COURSE (Fill form)
+// 3. EDIT SATHI FORM BHARNE
 // ===============================
 function editCourse(btn) {
-  const row = btn.closest("tr");
-  editingCourseId = row.dataset.id;
-  
-  document.getElementById("courseDuration").value = row.querySelector(".course-duration").innerText;
-  document.getElementById("courseStartDate").value = row.querySelector(".course-startdate").innerText;
-  
-  const addBtn = document.querySelector("#courses .form button");
-  addBtn.innerText = "Update Course";
-  document.getElementById("courseDuration").focus();
+    const row = btn.closest("tr");
+    editingCourseId = row.dataset.id;
+    
+    document.getElementById("courseDuration").value = row.querySelector(".course-duration").innerText;
+    document.getElementById("courseStartDate").value = row.querySelector(".course-startdate").innerText;
+    
+    document.getElementById("submitBtn").innerText = "Update Course";
 }
 
 // ===============================
-// DELETE COURSE
+// 4. DATA DELETE KARNE
 // ===============================
-async function deleteCourse(btn) {
-  if (!confirm("Delete this course?")) return;
-  
-  const id = btn.closest("tr").dataset.id;
-  try {
-    const res = await fetch(`${COURSE_API}/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      loadCourses();
-    } else {
-      alert("Delete failed");
+async function deleteCourse(id) {
+    if (!confirm("Haa course delete karaycha ka?")) return;
+    
+    try {
+        const res = await fetch(`${COURSE_API}/${id}`, { method: "DELETE" });
+        if (res.ok) {
+            loadCourses();
+        } else {
+            alert("Delete karta ale nahi.");
+        }
+    } catch (err) {
+        console.error("Delete error:", err);
     }
-  } catch (err) {
-    console.error("Delete error:", err);
-  }
 }
 
-// Initial Load
+// Page load jhalyavar data dakhva
 document.addEventListener("DOMContentLoaded", loadCourses);
+
 
 // ===============================
 // TRAINING SECTION ADMIN JS
