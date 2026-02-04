@@ -97,11 +97,10 @@ function editRow(btn) {
 // ===============================
 
 (() => {
-  // १. तुमच्या बॅकएंडची बरोबर URL
+  // १. तुमच्या बॅकएंडची URL (BASE_URL आधीच डिफाइन केलेली असावी)
   const API_URL = `${BASE_URL}/api/certificates`;
 
-  // २. सुपबेस प्रोजेक्टची माहिती (इथे स्पेलिंग दुरुस्त केले आहे)
-  // तुमच्या डॅशबोर्डनुसार बरोबर आयडी 'jjxosflqkdccgtdyhguz' हाच हवा
+  // २. सुपबेस प्रोजेक्टची अचूक माहिती
   const SUPABASE_PROJECT_ID = "jjxosflqkdccgtdyhguz"; 
   const BUCKET_NAME = "certificates";
 
@@ -136,13 +135,12 @@ function editRow(btn) {
           
           // डायनॅमिक इमेज लिंक तयार करणे
           let imageUrl = cert.image;
-          if (!cert.image.startsWith('http')) {
-            // ही लिंक आता आपोआप प्रत्येक इमेजसाठी पूर्ण पाथ तयार करेल
+          if (cert.image && !cert.image.startsWith('http')) {
             imageUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${cert.image}`;
           }
 
           row.innerHTML = `
-            <td style="padding: 15px; border-bottom: 1px solid #eee;">
+            <td style="padding: 15px; border-bottom: 1px solid #eee; text-align: center;">
               <img src="${imageUrl}" 
                    onerror="this.src='https://via.placeholder.com/150?text=Image+Not+Found'"
                    style="max-width:150px; border-radius:8px; display:block; margin:auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;">
