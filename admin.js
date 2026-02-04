@@ -673,7 +673,96 @@ async function deleteTraining(btn) {
   } catch (err) {
     console.error("Delete error:", err);
   }
+}const TRAINING_API = `${BASE_URL}/api/trainings`;
+
+// 1. DATA LOAD KARNE
+async function loadTrainings() {
+    try {
+        const res = await fetch(TRAINING_API);
+        const data = await res.json();
+        const container = document.getElementById("trainingTable");
+        
+        if (!container) return;
+        container.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `<p style="text-align:center; padding: 20px;">No trainings found.</p>`;
+            return;
+        }
+
+        data.forEach(t => {
+            const card = document.createElement("div");
+            card.className = "training-card"; // Tumcha CSS class
+            card.style = "display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee;";
+            
+            card.innerHTML = `
+                <div style="flex: 1;"><i class="${t.icon}" style="font-size: 20px;"></i></div>
+                <div style="flex: 2;">${t.name}</div>
+                <div style="flex: 1;">
+                    <button onclick="deleteTraining('${t.id}')" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Delete</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    } catch (err) {
+        console.error("Load error:", err);
+    }
 }
+
+// 2. DATA ADD KARNE
+async function addTraining() {
+    const iconInput = document.getElementById("t1");
+    const nameInput = document.getElementById("t2");
+    const submitBtn = document.getElementById("addBtnTraining");
+
+    const payload = {
+        icon: iconInput.value.trim(),
+        name: nameInput.value.trim()
+    };
+
+    if (!payload.icon || !payload.name) {
+        alert("Krupaya Icon class ani Name dohi bhara!");
+        return;
+    }
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Saving...";
+
+        const res = await fetch(TRAINING_API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            iconInput.value = "";
+            nameInput.value = "";
+            loadTrainings(); // Refresh list
+        } else {
+            alert("Database madhe save karta ale nahi.");
+        }
+    } catch (err) {
+        console.error("Add error:", err);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Add";
+    }
+}
+
+// 3. DELETE KARNE
+async function deleteTraining(id) {
+    if (!confirm("Hee training delete karaychi ka?")) return;
+    try {
+        const res = await fetch(`${TRAINING_API}/${id}`, { method: "DELETE" });
+        if (res.ok) loadTrainings();
+    } catch (err) {
+        console.error("Delete error:", err);
+    }
+}
+
+// INIT
+document.addEventListener("DOMContentLoaded", loadTrainings);
 
 // ===============================
 // SINGLE CONTACT ADMIN JS

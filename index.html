@@ -134,25 +134,22 @@
 
     <!-- TRAINING -->
     <section id="training" class="panel">
-      <h2>Training</h2>
+  <h2>Training</h2>
 
-      <!-- Add / Edit Training Form -->
-      <div class="form">
-        <input id="t1" placeholder="FontAwesome Icon (e.g. fas fa-cloud)">
-        <input id="t2" placeholder="Training Name">
-        <button id="addBtnTraining">Add</button>
-      </div>
+  <div class="form">
+    <input id="t1" placeholder="FontAwesome Icon (e.g. fas fa-cloud)">
+    <input id="t2" placeholder="Training Name">
+    <button id="addBtnTraining" onclick="addTraining()">Add</button>
+  </div>
 
-      <!-- Table Headings -->
-      <div class="training-headings">
-        <span class="heading">Icon</span>
-        <span class="heading">Training Name</span>
-        <span class="heading">Action</span>
-      </div>
+  <div class="training-headings" style="display: flex; font-weight: bold; padding: 10px; border-bottom: 2px solid #ccc;">
+    <span class="heading" style="flex: 1;">Icon</span>
+    <span class="heading" style="flex: 2;">Training Name</span>
+    <span class="heading" style="flex: 1;">Action</span>
+  </div>
 
-      <!-- Training Cards Container -->
-      <div id="trainingTable" class="training-cards"></div>
-    </section>
+  <div id="trainingTable" class="training-cards"></div>
+</section>
 
     <!-- CONTACT -->
     <section id="contact" class="panel">
