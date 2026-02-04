@@ -100,9 +100,12 @@ function editRow(btn) {
   // १. तुमच्या बॅकएंडची URL (BASE_URL आधीच डिफाइन केलेली असावी)
   const API_URL = `${BASE_URL}/api/certificates`;
 
-  // २. सुपबेस प्रोजेक्टची अचूक माहिती
+  // २. सुपबेस प्रोजेक्टची अचूक माहिती (तुमच्या माहितीनुसार अपडेटेड)
   const SUPABASE_PROJECT_ID = "jjxosflqkdccgtdyhguz"; 
-  const BUCKET_NAME = "certificates";
+  const BUCKET_NAME = "certificates"; //
+  
+  // बेस पाथ जो सर्व इमेजेससाठी कॉमन असेल
+  const STORAGE_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/`;
 
   let editingCertId = null;
 
@@ -133,10 +136,12 @@ function editRow(btn) {
           const row = document.createElement("tr");
           row.dataset.id = cert.id;
           
-          // डायनॅमिक इमेज लिंक तयार करणे
+          // --- डायनॅमिक इमेज लिंक तयार करणे (SVG आणि JPG दोन्हीसाठी) ---
           let imageUrl = cert.image;
+          
+          // जर डेटाबेसमध्ये पूर्ण लिंक नसेल तर सुपबेस पाथ जोडा
           if (cert.image && !cert.image.startsWith('http')) {
-            imageUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${cert.image}`;
+            imageUrl = `${STORAGE_URL}${cert.image}`;
           }
 
           row.innerHTML = `
@@ -144,6 +149,7 @@ function editRow(btn) {
               <img src="${imageUrl}" 
                    onerror="this.src='https://via.placeholder.com/150?text=Image+Not+Found'"
                    style="max-width:150px; border-radius:8px; display:block; margin:auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;">
+              <p style="font-size: 10px; color: #888; margin-top: 5px;">${cert.image}</p>
             </td>
             <td style="text-align:center; vertical-align:middle; border-bottom: 1px solid #eee;">
               <button type="button" class="edit-btn" style="background:#ffc107; border:none; padding:8px 12px; cursor:pointer; border-radius:4px; margin-right:5px; font-weight:bold;">Edit</button>
