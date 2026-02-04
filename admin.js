@@ -99,11 +99,11 @@ function editRow(btn) {
 (() => {
   const API_URL = `${BASE_URL}/api/certificates`;
 
-  // सुपबेस कॉन्फिगरेशन (तुमच्या लिंकनुसार अपडेटेड)
+  // सुपबेस कॉन्फिगरेशन
   const SUPABASE_PROJECT_ID = "jjxosflqkdccgtdyhguz"; 
   const BUCKET_NAME = "certificates";
   
-  // ही तुमची फायनल स्टोरेज लिंक आहे
+  // तुमची अपडेटेड स्टोरेज लिंक (येथे बदल केला आहे)
   const STORAGE_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/`;
 
   let editingCertId = null;
@@ -135,7 +135,7 @@ function editRow(btn) {
           
           // इमेज पाथ तयार करण्याचे लॉजिक
           let imageUrl = cert.image;
-          // जर डेटाबेसमध्ये फक्त नाव असेल (उदा. photo.jpg), तर त्याला STORAGE_URL जोडणे
+          // जर डेटाबेसमध्ये फक्त नाव असेल, तर त्याला STORAGE_URL जोडणे
           if (cert.image && !cert.image.startsWith('http')) {
             imageUrl = `${STORAGE_URL}${cert.image}`;
           }
