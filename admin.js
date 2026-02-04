@@ -159,8 +159,8 @@ function editRow(btn) {
 // PLACEMENT SECTION ADMIN JS
 // ===============================
 (() => {
-  // खात्री करा की BASE_URL तुमच्या Vercel बॅकएंडची आहे
-  const PLACE_API = `${BASE_URL}/api/placements`;
+    const PLACE_API = `${BASE_URL}/api/placements`;
+  
   let editingPlaceId = null;
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -170,7 +170,7 @@ function editRow(btn) {
     if (!placementsContainer || !addBtn) return;
 
     // ------------------------------
-    // Load placements
+    // 1. Data Load Karne (GET)
     // ------------------------------
     async function loadPlacements() {
       try {
@@ -178,7 +178,7 @@ function editRow(btn) {
         const data = await res.json();
         placementsContainer.innerHTML = "";
 
-        if (!data || !data.length) {
+        if (!data || data.error || !data.length) {
           placementsContainer.innerHTML = "<p style='text-align:center; padding:20px;'>No placements found.</p>";
           return;
         }
@@ -190,40 +190,34 @@ function editRow(btn) {
     }
 
     // ------------------------------
-    // Create placement card
+    // 2. Card Design Banvane
     // ------------------------------
     function createPlacementCard(p) {
       const card = document.createElement("div");
       card.className = "placement-card";
       card.dataset.id = p.id;
 
-      // Supabase कडून पूर्ण URL येते, त्यामुळे चेक करण्याची गरज नाही
-      // तरीही सुरक्षेसाठी हा चेक ठेवला आहे
-      const imgSrc = p.image.startsWith("http") 
-        ? p.image 
-        : `${BASE_URL}${p.image}`;
-
       card.innerHTML = `
         <div class="cell image">
-          <img class="placement-img" src="${imgSrc}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+          <img class="placement-img" src="${p.image}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
         </div>
         <div class="cell placement-name">${p.name}</div>
         <div class="cell placement-role">${p.role}</div>
         <div class="cell placement-company">${p.company}</div>
         <div class="cell placement-package">${p.package}</div>
         <div class="cell actions">
-          <button type="button" class="edit" style="background:#ffc107; border-radius:4px; padding:4px 8px; cursor:pointer;">Edit</button>
-          <button type="button" class="delete" style="background:#dc3545; color:#fff; border-radius:4px; padding:4px 8px; cursor:pointer;">Delete</button>
+          <button type="button" class="edit" style="background:#ffc107; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; margin-right:5px;">Edit</button>
+          <button type="button" class="delete" style="background:#dc3545; color:#fff; border:none; border-radius:4px; padding:5px 10px; cursor:pointer;">Delete</button>
         </div>
       `;
 
-      card.querySelector(".edit").onclick = () => editPlacement(card, p);
-      card.querySelector(".delete").onclick = () => deletePlacement(card);
+      card.querySelector(".edit").onclick = () => editPlacement(p);
+      card.querySelector(".delete").onclick = () => deletePlacement(p.id);
       placementsContainer.appendChild(card);
     }
 
     // ------------------------------
-    // Add / Update placement
+    // 3. Add / Update Logic (POST / PUT)
     // ------------------------------
     addBtn.addEventListener("click", async (e) => {
       e.preventDefault();
@@ -240,12 +234,7 @@ function editRow(btn) {
         return;
       }
 
-      // जर नवीन एंट्री असेल तर इमेज अनिवार्य आहे
-      if (!editingPlaceId && !file) {
-        alert("Please select student image");
-        return;
-      }
-
+      // FormData vapra mhanje Multer la file milel
       const formData = new FormData();
       formData.append("name", name);
       formData.append("company", company);
@@ -257,44 +246,41 @@ function editRow(btn) {
         addBtn.disabled = true;
         addBtn.innerText = "Processing...";
 
-        let res;
+        let url = PLACE_API;
+        let method = "POST";
+
         if (editingPlaceId) {
-          res = await fetch(`${PLACE_API}/${editingPlaceId}`, {
-            method: "PUT",
-            body: formData
-          });
-          editingPlaceId = null;
-          addBtn.innerText = "Add Placement";
-        } else {
-          res = await fetch(PLACE_API, {
-            method: "POST",
-            body: formData
-          });
+          url = `${PLACE_API}/${editingPlaceId}`;
+          method = "PUT";
         }
 
+        const res = await fetch(url, {
+          method: method,
+          body: formData // JSON stringify garaj nahi, FormData direct pathva
+        });
+
+        const result = await res.json();
+
         if (res.ok) {
+          alert(editingPlaceId ? "Placement Updated!" : "Placement Added!");
+          resetForm();
           loadPlacements();
-          // clear form
-          document.getElementById("studentName").value = "";
-          document.getElementById("studentCompany").value = "";
-          document.getElementById("studentRole").value = "";
-          document.getElementById("studentPackage").value = "";
-          imgInput.value = "";
         } else {
-          alert("Failed to save data");
+          alert("Error: " + (result.error || "Failed to save"));
         }
       } catch (err) {
-        console.error("Placement save error:", err);
+        console.error("Save error:", err);
+        alert("Server error!");
       } finally {
         addBtn.disabled = false;
-        if (!editingPlaceId) addBtn.innerText = "Add Placement";
+        addBtn.innerText = editingPlaceId ? "Update Placement" : "Add Placement";
       }
     });
 
     // ------------------------------
-    // Edit placement
+    // 4. Edit Function
     // ------------------------------
-    function editPlacement(card, p) {
+    function editPlacement(p) {
       editingPlaceId = p.id;
       document.getElementById("studentName").value = p.name;
       document.getElementById("studentCompany").value = p.company;
@@ -302,21 +288,35 @@ function editRow(btn) {
       document.getElementById("studentPackage").value = p.package;
       
       addBtn.innerText = "Update Placement";
-      document.getElementById("studentName").focus();
+      window.scrollTo(0, 0); // Form kade screen scroll kara
     }
 
     // ------------------------------
-    // Delete placement
+    // 5. Delete Function
     // ------------------------------
-    async function deletePlacement(card) {
-      if (!confirm("Delete this placement?")) return;
-      const id = card.dataset.id;
+    async function deletePlacement(id) {
+      if (!confirm("Are you sure you want to delete this?")) return;
+      
       try {
         const res = await fetch(`${PLACE_API}/${id}`, { method: "DELETE" });
-        if (res.ok) loadPlacements();
+        if (res.ok) {
+          loadPlacements();
+        } else {
+          alert("Delete failed");
+        }
       } catch (err) {
         console.error("Delete error:", err);
       }
+    }
+
+    function resetForm() {
+      editingPlaceId = null;
+      document.getElementById("studentName").value = "";
+      document.getElementById("studentCompany").value = "";
+      document.getElementById("studentRole").value = "";
+      document.getElementById("studentPackage").value = "";
+      document.getElementById("studentImage").value = "";
+      addBtn.innerText = "Add Placement";
     }
 
     loadPlacements();
