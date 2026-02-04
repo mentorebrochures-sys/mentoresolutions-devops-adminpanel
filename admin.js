@@ -101,8 +101,8 @@ function editRow(btn) {
   const API_URL = `${BASE_URL}/api/certificates`;
 
   // २. सुपबेस प्रोजेक्टची माहिती (इथे स्पेलिंग दुरुस्त केले आहे)
-  // तुमच्या डॅशबोर्डनुसार बरोबर आयडी 'jjxosflqkdcgtdyhguzs' हाच हवा
-  const SUPABASE_PROJECT_ID = "jjxosflqkdcgtdyhguzs"; 
+  // तुमच्या डॅशबोर्डनुसार बरोबर आयडी 'jjxosflqkdccgtdyhguz' हाच हवा
+  const SUPABASE_PROJECT_ID = "jjxosflqkdccgtdyhguz"; 
   const BUCKET_NAME = "certificates";
 
   let editingCertId = null;
