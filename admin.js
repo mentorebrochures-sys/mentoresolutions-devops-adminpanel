@@ -97,137 +97,58 @@ function editRow(btn) {
 // ===============================
 
 (() => {
-  const API_URL = `${BASE_URL}/api/certificates`;
+    const API_URL = `${BASE_URL}/api/certificates`;
 
-  // Supabase Storage URL - Jithe images actually store ahet
-  const SUPABASE_PROJECT_ID = "jjxosflqkdccgtdyhguz"; 
-  const BUCKET_NAME = "certificates";
-  const STORAGE_URL = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/`;
+    document.addEventListener("DOMContentLoaded", () => {
+        const addBtn = document.getElementById("addCertBtn");
+        const imageInput = document.getElementById("certImage");
 
-  let editingCertId = null;
+        if (!addBtn) return;
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const table = document.getElementById("certificateTable");
-    const imageInput = document.getElementById("certImage");
-    const addBtn = document.getElementById("addCertBtn");
+        addBtn.onclick = async (e) => {
+            e.preventDefault();
+            const file = imageInput.files[0];
 
-    if (!table || !imageInput || !addBtn) return;
-
-    // --- 1. LOAD CERTIFICATES ---
-    async function loadCertificates() {
-      try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
-        
-        table.innerHTML = "";
-
-        if (!data || data.length === 0 || data.error) {
-          table.innerHTML = `<tr><td colspan="2" style="text-align:center; padding:20px;">No certificates found</td></tr>`;
-          return;
-        }
-
-        data.forEach(cert => {
-          const row = document.createElement("tr");
-          row.dataset.id = cert.id;
-          
-          // Image URL handling
-          let imageUrl = cert.image;
-          if (cert.image && !cert.image.startsWith('http')) {
-            imageUrl = `${STORAGE_URL}${cert.image}`;
-          }
-
-          row.innerHTML = `
-            <td style="padding: 15px; text-align: center; border-bottom: 1px solid #ddd;">
-              <img src="${imageUrl}" 
-                   onerror="this.src='https://via.placeholder.com/150?text=Error+Loading'"
-                   style="max-width:120px; border-radius:5px; box-shadow: 2px 2px 8px rgba(0,0,0,0.1);">
-            </td>
-            <td style="text-align:center; border-bottom: 1px solid #ddd;">
-              <button type="button" class="edit-btn" style="background:#ffc107; border:none; padding:8px 12px; cursor:pointer; border-radius:4px; margin-right:5px;">Edit</button>
-              <button type="button" class="delete-btn" style="background:#dc3545; color:#fff; border:none; padding:8px 12px; cursor:pointer; border-radius:4px;">Delete</button>
-            </td>
-          `;
-
-          // Edit Functionality
-          row.querySelector(".edit-btn").onclick = () => {
-            editingCertId = cert.id;
-            addBtn.innerText = "Update Certificate";
-            addBtn.style.background = "#28a745";
-            addBtn.style.color = "#fff";
-            imageInput.scrollIntoView({ behavior: 'smooth' });
-          };
-
-          // Delete Functionality
-          row.querySelector(".delete-btn").onclick = async () => {
-            if (!confirm("Delete this certificate forever?")) return;
-            try {
-              const delRes = await fetch(`${API_URL}/${cert.id}`, { method: "DELETE" });
-              if (delRes.ok) {
-                alert("Deleted successfully!");
-                loadCertificates();
-              } else {
-                alert("Delete failed!");
-              }
-            } catch (err) {
-              console.error("Delete error:", err);
+            if (!file) {
+                alert("File select kara!");
+                return;
             }
-          };
 
-          table.appendChild(row);
-        });
-      } catch (err) {
-        console.error("Load error:", err);
-        table.innerHTML = `<tr><td colspan="2" style="text-align:center; color:red;">Server Error: Check Console</td></tr>`;
-      }
-    }
+            console.log("File detected:", file.name); // Debugging
 
-    // --- 2. SAVE / UPDATE (POST & PUT) ---
-    addBtn.onclick = async (e) => {
-      const file = imageInput.files[0];
-      
-      if (!editingCertId && !file) {
-        alert("Please select an image file first.");
-        return;
-      }
+            const formData = new FormData();
+            formData.append("image", file); // 'image' name controller madhe req.file sathi vapra
 
-      const formData = new FormData();
-      if (file) formData.append("image", file); // Key 'image' backend controller madhe match pahije
+            try {
+                addBtn.disabled = true;
+                addBtn.innerText = "Uploading...";
 
-      try {
-        addBtn.disabled = true;
-        addBtn.innerText = editingCertId ? "Updating..." : "Uploading...";
+                console.log("Sending request to:", API_URL);
 
-        const method = editingCertId ? "PUT" : "POST";
-        const url = editingCertId ? `${API_URL}/${editingCertId}` : API_URL;
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: formData // Ithe headers (Content-Type) taku nako!
+                });
 
-        const response = await fetch(url, { 
-          method: method, 
-          body: formData 
-          // Note: FormData aslyamule 'Content-Type' header deuchi garaj nahi
-        });
+                const result = await response.json();
+                console.log("Server Response:", result);
 
-        if (response.ok) {
-          alert(editingCertId ? "Certificate Updated!" : "Certificate Saved to Supabase!");
-          imageInput.value = ""; 
-          editingCertId = null;
-          addBtn.innerText = "Save Certificate";
-          addBtn.style.background = ""; 
-          loadCertificates();
-        } else {
-          const errData = await response.json();
-          alert("Error: " + (errData.error || "Upload failed"));
-        }
-      } catch (err) {
-        console.error("Save error:", err);
-        alert("Server connection failed!");
-      } finally {
-        addBtn.disabled = false;
-        if (!editingCertId) addBtn.innerText = "Save Certificate";
-      }
-    };
-
-    loadCertificates();
-  });
+                if (response.ok) {
+                    alert("Success! Data stored in Supabase.");
+                    imageInput.value = "";
+                    loadCertificates(); // List refresh kara
+                } else {
+                    alert("Error: " + (result.error || "Unknown Error"));
+                }
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                alert("Server connect hot nahiye. Backend chalu aahe ka?");
+            } finally {
+                addBtn.disabled = false;
+                addBtn.innerText = "Save Certificate";
+            }
+        };
+    });
 })();
 
 
