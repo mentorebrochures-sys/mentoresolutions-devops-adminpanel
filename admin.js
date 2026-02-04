@@ -97,11 +97,11 @@ function editRow(btn) {
 // ------------------------------
 (() => {
   // १. तुमच्या बॅकएंडची बरोबर URL
+  const BASE_URL = "https://mentoresolutions-devops-backend.vercel.app";
   const API_URL = `${BASE_URL}/api/certificates`;
   
-  // २. तुमच्या सुपबेस प्रोजेक्टची खरी माहिती
-  // तुमच्या URL नुसार प्रोजेक्ट आयडी 'jjxosflqkdcgtdyhguzs' हा आहे
-  const SUPABASE_PROJECT_ID = "jjxosflqkdccgtdyhguz"; 
+  // २. सुपबेस माहिती - स्पेलिंग दुरुस्त केली आहे (शेवटी 's' जोडला आहे)
+  const SUPABASE_PROJECT_ID = "jjxosflqkdcgtdyhguzs"; 
   const BUCKET_NAME = "certificates";
 
   let editingCertId = null;
@@ -119,7 +119,6 @@ function editRow(btn) {
     async function loadCertificates() {
       try {
         const res = await fetch(API_URL);
-        // बॅकएंड सुरू नसल्यास एरर हाताळणे
         if (!res.ok) throw new Error("Backend not responding");
         
         const data = await res.json();
@@ -136,15 +135,16 @@ function editRow(btn) {
           
           // इमेजची पूर्ण सुपबेस लिंक तयार करणे
           let imageUrl = cert.image;
-          if (!cert.image.startsWith('http')) {
+          // जर डेटाबेसमध्ये पूर्ण URL नसेल तर ती तयार करा
+          if (cert.image && !cert.image.startsWith('http')) {
             imageUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/${BUCKET_NAME}/${cert.image}`;
           }
 
           row.innerHTML = `
-            <td>
+            <td style="padding: 15px; text-align: center;">
               <img src="${imageUrl}" 
                    onerror="this.src='https://via.placeholder.com/150?text=Image+Not+Found'"
-                   style="max-width:150px; border-radius:8px; display:block; margin:auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                   style="max-width:150px; border-radius:8px; display:block; margin:auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;">
             </td>
             <td style="text-align:center; vertical-align:middle;">
               <button type="button" class="edit-btn" style="background:#ffc107; border:none; padding:8px 12px; cursor:pointer; border-radius:4px; margin-right:5px; font-weight:bold;">Edit</button>
@@ -156,7 +156,7 @@ function editRow(btn) {
           row.querySelector(".edit-btn").onclick = () => {
             editingCertId = cert.id;
             addBtn.innerText = "Update Certificate";
-            addBtn.style.background = "#28a745"; // हिरवा रंग अपडेटसाठी
+            addBtn.style.background = "#28a745"; 
             imageInput.scrollIntoView({ behavior: 'smooth' });
           };
 
@@ -187,7 +187,6 @@ function editRow(btn) {
       e.preventDefault(); 
       const file = imageInput.files[0];
       
-      // नवीन फाईल निवडली नसेल आणि आपण नवीन ॲड करत असू तर रोखणे
       if (!editingCertId && !file) {
         alert("Please select an image file first.");
         return;
@@ -209,10 +208,10 @@ function editRow(btn) {
         });
 
         if (response.ok) {
-          imageInput.value = ""; // फाईल इनपुट रिकामे करणे
+          imageInput.value = ""; 
           editingCertId = null;
           addBtn.innerText = "Save Certificate";
-          addBtn.style.background = ""; // मूळ रंग
+          addBtn.style.background = ""; 
           loadCertificates();
           alert(method === "POST" ? "Added successfully!" : "Updated successfully!");
         } else {
@@ -228,7 +227,6 @@ function editRow(btn) {
       }
     });
 
-    // सुरुवातीला लोड करणे
     loadCertificates();
   });
 })();
