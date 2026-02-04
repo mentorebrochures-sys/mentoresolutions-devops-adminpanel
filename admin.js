@@ -398,14 +398,14 @@ function editRow(btn) {
 })();
 
 // ============================
-// Courses
+// COURSE JS (Vercel Ready)
 // ============================
-// 1. BASE URL (Tumcha backend URL ithe taka)
+
 const COURSE_API = `${BASE_URL}/api/courses`;
 let editingCourseId = null;
 
 // ===============================
-// 1. DATABASE MADHUN DATA LOAD KARNE
+// 1. DATA LOAD KARNE
 // ===============================
 async function loadCourses() {
     try {
@@ -416,7 +416,7 @@ async function loadCourses() {
         if (!table) return;
         table.innerHTML = "";
 
-        if (!courses || courses.length === 0) {
+        if (!courses || courses.length === 0 || courses.error) {
             table.innerHTML = `<tr><td colspan="3" style="text-align:center;">No courses found</td></tr>`;
             return;
         }
@@ -428,8 +428,8 @@ async function loadCourses() {
                 <td class="course-duration">${course.duration}</td>
                 <td class="course-startdate">${course.start_date}</td>
                 <td>
-                    <button class="action-btn edit" onclick="editCourse(this)" style="background:#ffc107;">Edit</button>
-                    <button class="action-btn delete" onclick="deleteCourse('${course.id}')" style="background:#dc3545; color:#fff;">Delete</button>
+                    <button class="action-btn edit" onclick="editCourse(this)" style="background:#ffc107; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Edit</button>
+                    <button class="action-btn delete" onclick="deleteCourse('${course.id}')" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Delete</button>
                 </td>
             `;
             table.appendChild(row);
@@ -445,7 +445,9 @@ async function loadCourses() {
 async function addCourse() {
     const durationInput = document.getElementById("courseDuration");
     const startDateInput = document.getElementById("courseStartDate");
-    const submitBtn = document.getElementById("submitBtn");
+    
+    // HTML class badalnyachi garaj nahi, querySelector vaprun button sho dhuya
+    const submitBtn = document.querySelector("#courses .form button");
 
     const duration = durationInput.value.trim();
     const start_date = startDateInput.value;
@@ -458,19 +460,21 @@ async function addCourse() {
     const payload = { duration, start_date };
 
     try {
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Saving...";
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Saving...";
+        }
 
         let response;
         if (editingCourseId) {
-            // UPDATE (PUT request)
+            // UPDATE
             response = await fetch(`${COURSE_API}/${editingCourseId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
         } else {
-            // ADD NEW (POST request)
+            // ADD NEW
             response = await fetch(COURSE_API, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -479,19 +483,24 @@ async function addCourse() {
         }
 
         if (response.ok) {
+            alert(editingCourseId ? "Course Updated!" : "Course Added to Supabase!");
+            
+            // Reset Form
             durationInput.value = "";
             startDateInput.value = "";
             editingCourseId = null;
-            submitBtn.innerText = "Add Course";
-            loadCourses(); // List refresh kara
+            if (submitBtn) submitBtn.innerText = "Add Course";
+            
+            loadCourses(); 
         } else {
-            alert("Database madhe save hot nahiye!");
+            const errorMsg = await response.json();
+            alert("Error: " + (errorMsg.error || "Failed to save"));
         }
     } catch (err) {
         console.error("Save error:", err);
-        alert("Backend server online ahe ka check kara!");
+        alert("Server connection failed!");
     } finally {
-        submitBtn.disabled = false;
+        if (submitBtn) submitBtn.disabled = false;
     }
 }
 
@@ -505,7 +514,8 @@ function editCourse(btn) {
     document.getElementById("courseDuration").value = row.querySelector(".course-duration").innerText;
     document.getElementById("courseStartDate").value = row.querySelector(".course-startdate").innerText;
     
-    document.getElementById("submitBtn").innerText = "Update Course";
+    const submitBtn = document.querySelector("#courses .form button");
+    if (submitBtn) submitBtn.innerText = "Update Course";
 }
 
 // ===============================
@@ -519,14 +529,13 @@ async function deleteCourse(id) {
         if (res.ok) {
             loadCourses();
         } else {
-            alert("Delete karta ale nahi.");
+            alert("Delete failed.");
         }
     } catch (err) {
         console.error("Delete error:", err);
     }
 }
 
-// Page load jhalyavar data dakhva
 document.addEventListener("DOMContentLoaded", loadCourses);
 
 
