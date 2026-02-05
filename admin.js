@@ -102,9 +102,51 @@ function editRow(btn) {
     document.addEventListener("DOMContentLoaded", () => {
         const addBtn = document.getElementById("addCertBtn");
         const imageInput = document.getElementById("certImage");
+        const certificateTable = document.getElementById("certificateTable");
 
         if (!addBtn) return;
 
+        // 1. DATA LOAD KARNYASATHI FUNCTION
+        async function loadCertificates() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+
+                certificateTable.innerHTML = ""; // Table clear kara
+
+                data.forEach(cert => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>
+                            <img src="${cert.image}" alt="Certificate" style="width: 100px; border-radius: 5px;">
+                        </td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteCert(${cert.id})">Delete</button>
+                        </td>
+                    `;
+                    certificateTable.appendChild(row);
+                });
+            } catch (err) {
+                console.error("Load Error:", err);
+            }
+        }
+
+        // 2. DELETE KARNYASATHI FUNCTION (Global window object var set kara lagte)
+        window.deleteCert = async (id) => {
+            if (!confirm("Are you sure? Certificate and Image doghi delete hotil!")) return;
+
+            try {
+                const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+                if (res.ok) {
+                    alert("Deleted!");
+                    loadCertificates(); // List parat load kara
+                }
+            } catch (err) {
+                alert("Delete karta aale nahi.");
+            }
+        };
+
+        // 3. ADD/SAVE CERTIFICATE logic (Tuzach code thoda refine kela aahe)
         addBtn.onclick = async (e) => {
             e.preventDefault();
             const file = imageInput.files[0];
@@ -114,40 +156,37 @@ function editRow(btn) {
                 return;
             }
 
-            console.log("File detected:", file.name); // Debugging
-
             const formData = new FormData();
-            formData.append("image", file); // 'image' name controller madhe req.file sathi vapra
+            formData.append("image", file);
 
             try {
                 addBtn.disabled = true;
                 addBtn.innerText = "Uploading...";
 
-                console.log("Sending request to:", API_URL);
-
                 const response = await fetch(API_URL, {
                     method: "POST",
-                    body: formData // Ithe headers (Content-Type) taku nako!
+                    body: formData
                 });
 
                 const result = await response.json();
-                console.log("Server Response:", result);
 
                 if (response.ok) {
-                    alert("Success! Data stored in Supabase.");
+                    alert("Success! Supabase madhe store jhale.");
                     imageInput.value = "";
-                    loadCertificates(); // List refresh kara
+                    loadCertificates(); // Refresh table
                 } else {
                     alert("Error: " + (result.error || "Unknown Error"));
                 }
             } catch (err) {
-                console.error("Fetch Error:", err);
-                alert("Server connect hot nahiye. Backend chalu aahe ka?");
+                alert("Server error!");
             } finally {
                 addBtn.disabled = false;
                 addBtn.innerText = "Save Certificate";
             }
         };
+
+        // Page load jhalyavar data dakhva
+        loadCertificates();
     });
 })();
 
@@ -155,9 +194,7 @@ function editRow(btn) {
 // ------------------------------
 // Placement Section Admin JS
 // ------------------------------
-// ===============================
-// PLACEMENT SECTION ADMIN JS
-// ===============================
+
 (() => {
     const PLACE_API = `${BASE_URL}/api/placements`;
   
