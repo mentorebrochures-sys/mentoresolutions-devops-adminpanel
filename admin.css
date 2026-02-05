@@ -519,6 +519,90 @@ td {
         flex-direction: column;
     }
 }
+
+/* Container आणि Row Structure */
+.placements-headings, .placement-item {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr 1fr 1fr 160px; /* बटणसाठी थोडी जास्त जागा */
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+}
+
+.placements-headings {
+    background: #343a40;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px 5px 0 0;
+}
+
+.placement-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* Edit Button */
+.edit-btn {
+    background-color: #ffc107;
+    color: #000;
+    border: none;
+    padding: 7px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.edit-btn:hover { background-color: #e0a800; }
+
+/* Save Button */
+.save-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* Delete Button */
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+/* Inline Input Styles */
+.inline-edit-input {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    outline: none;
+}
+
+.cancel-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
 /* ===============================
    RESPONSIVE (MOBILE)
 ================================ */

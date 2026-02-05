@@ -204,13 +204,15 @@ function editRow(btn) {
 // Placement Section Admin JS
 // ------------------------------
 
-const API_URL = `${BASE_URL}/api/placements`; // तुझ्या सर्व्हरचा URL खात्री करून घे
+const API_URL = `${BASE_URL}/api/placements`; 
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchPlacements();
 
     const addBtn = document.getElementById("addBtn");
-    addBtn.addEventListener("click", addPlacement);
+    if(addBtn) {
+        addBtn.addEventListener("click", addPlacement);
+    }
 });
 
 // 1. सर्व Placements मिळवून लिस्ट दाखवणे (GET)
@@ -220,19 +222,22 @@ async function fetchPlacements() {
         const data = await response.json();
 
         const container = document.getElementById("placementsContainer");
-        container.innerHTML = ""; // जुनी लिस्ट क्लिअर करा
+        container.innerHTML = ""; 
 
         data.forEach(item => {
             const row = document.createElement("div");
-            row.className = "placement-item"; // तुझ्या CSS प्रमाणे बदलू शकतोस
+            row.className = "placement-item";
+            row.id = `row-${item.id}`; 
             row.innerHTML = `
-                <img src="${item.image}" alt="${item.name}" width="50">
+                <img src="${item.image}" alt="${item.name}">
                 <span>${item.name}</span>
                 <span>${item.role}</span>
                 <span>${item.company}</span>
                 <span>${item.pkg}</span>
-                <button onclick="editPlacement('${item.id}')" class="edit-btn">Edit</button>
-                <button onclick="deletePlacement('${item.id}')" class="delete-btn">Delete</button>
+                <div class="action-buttons">
+                    <button onclick="editPlacement('${item.id}')" class="edit-btn">Edit</button>
+                    <button onclick="deletePlacement('${item.id}')" class="delete-btn">Delete</button>
+                </div>
             `;
             container.appendChild(row);
         });
@@ -254,7 +259,6 @@ async function addPlacement() {
         return;
     }
 
-    // FormData वापरणे आवश्यक आहे कारण आपण फाईल (image) पाठवत आहोत
     const formData = new FormData();
     formData.append("name", name);
     formData.append("company", company);
@@ -265,13 +269,13 @@ async function addPlacement() {
     try {
         const response = await fetch(API_URL, {
             method: "POST",
-            body: formData, // इथे Content-Type सेट करण्याची गरज नाही, FormData स्वतः करतो
+            body: formData,
         });
 
         if (response.ok) {
             alert("Placement यशस्वीरित्या ॲड झाली!");
             clearInputs();
-            fetchPlacements(); // लिस्ट रिफ्रेश करा
+            fetchPlacements(); 
         } else {
             const err = await response.json();
             alert("Error: " + err.error);
@@ -281,9 +285,58 @@ async function addPlacement() {
     }
 }
 
-// 3. Placement डिलीट करणे (DELETE)
+// 3. ओळीतच एडिट मोड सुरू करणे (Inline Edit)
+function editPlacement(id) {
+    const row = document.getElementById(`row-${id}`);
+    const spans = row.querySelectorAll('span');
+    
+    const name = spans[0].innerText;
+    const role = spans[1].innerText;
+    const company = spans[2].innerText;
+    const pkg = spans[3].innerText;
+    const currentImg = row.querySelector('img').src;
+
+    row.innerHTML = `
+        <img src="${currentImg}" style="opacity: 0.5; width: 50px; border-radius: 50%;">
+        <input type="text" id="edit-name-${id}" value="${name}" class="inline-edit-input">
+        <input type="text" id="edit-role-${id}" value="${role}" class="inline-edit-input">
+        <input type="text" id="edit-company-${id}" value="${company}" class="inline-edit-input">
+        <input type="text" id="edit-pkg-${id}" value="${pkg}" class="inline-edit-input">
+        <div class="action-buttons">
+            <button onclick="savePlacement('${id}')" class="save-btn">Save</button>
+            <button onclick="fetchPlacements()" class="cancel-btn">Cancel</button>
+        </div>
+    `;
+}
+
+// 4. अपडेट केलेला डेटा सेव्ह करणे (PUT)
+async function savePlacement(id) {
+    const name = document.getElementById(`edit-name-${id}`).value;
+    const role = document.getElementById(`edit-role-${id}`).value;
+    const company = document.getElementById(`edit-company-${id}`).value;
+    const pkg = document.getElementById(`edit-pkg-${id}`).value;
+
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, role, company, pkg })
+        });
+
+        if (response.ok) {
+            alert("अपडेट यशस्वी!");
+            fetchPlacements();
+        } else {
+            alert("अपडेट फेल झाले.");
+        }
+    } catch (error) {
+        console.error("Save error:", error);
+    }
+}
+
+// 5. डिलीट करणे (DELETE)
 async function deletePlacement(id) {
-    if (!confirm("तुम्हाला खात्री आहे की तुम्ही हे डिलीट करू इच्छिता?")) return;
+    if (!confirm("तुम्हाला खात्री आहे का?")) return;
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
@@ -292,14 +345,13 @@ async function deletePlacement(id) {
 
         if (response.ok) {
             alert("डिलीट झाले!");
-            fetchPlacements(); // लिस्ट रिफ्रेश करा
+            fetchPlacements();
         }
     } catch (error) {
         console.error("Error deleting placement:", error);
     }
 }
 
-// इनपुट फिल्ड्स रिकामी करण्यासाठी
 function clearInputs() {
     document.getElementById("studentName").value = "";
     document.getElementById("studentCompany").value = "";
