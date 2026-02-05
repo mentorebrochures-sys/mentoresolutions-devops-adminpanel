@@ -204,7 +204,7 @@ function editRow(btn) {
 // Placement Section Admin JS
 // ------------------------------
 
-const API_URL = "http://localhost:5000/api/placements"; 
+const API_URL = `${BASE_URL}/api/placements`; // तुझ्या सर्व्हरचा URL खात्री करून घे
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchPlacements();
@@ -213,52 +213,47 @@ document.addEventListener("DOMContentLoaded", () => {
     addBtn.addEventListener("click", addPlacement);
 });
 
-// 1. डेटाबेस मधून सर्व Placements आणून दाखवणे
+// 1. सर्व Placements मिळवून लिस्ट दाखवणे (GET)
 async function fetchPlacements() {
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
 
         const container = document.getElementById("placementsContainer");
-        container.innerHTML = ""; // जुना डेटा क्लिअर करा
+        container.innerHTML = ""; // जुनी लिस्ट क्लिअर करा
 
         data.forEach(item => {
-            // तुझ्या "placements-headings" च्या स्ट्रक्चरनुसार कार्ड तयार करणे
-            const card = document.createElement("div");
-            card.className = "placement-card-row"; // हे तुझ्या CSS नुसार बदलू शकतोस
-            
-            card.innerHTML = `
-                <span class="cell"><img src="${item.image}" alt="student" style="width:50px; height:50px; object-fit:cover; border-radius:4px;"></span>
-                <span class="cell">${item.name}</span>
-                <span class="cell">${item.role}</span>
-                <span class="cell">${item.company}</span>
-                <span class="cell">${item.pkg}</span>
-                <span class="cell">
-                    <button onclick="deletePlacement('${item.id}')" class="delete-btn" style="background:#ff4d4d; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Delete</button>
-                </span>
+            const row = document.createElement("div");
+            row.className = "placement-item"; // तुझ्या CSS प्रमाणे बदलू शकतोस
+            row.innerHTML = `
+                <img src="${item.image}" alt="${item.name}" width="50">
+                <span>${item.name}</span>
+                <span>${item.role}</span>
+                <span>${item.company}</span>
+                <span>${item.pkg}</span>
+                <button onclick="deletePlacement('${item.id}')" class="delete-btn">Delete</button>
             `;
-            container.appendChild(card);
+            container.appendChild(row);
         });
     } catch (error) {
         console.error("Error fetching placements:", error);
     }
 }
 
-// 2. नवीन Placement ॲड करणे
+// 2. नवीन Placement ॲड करणे (POST)
 async function addPlacement() {
     const name = document.getElementById("studentName").value;
     const company = document.getElementById("studentCompany").value;
     const role = document.getElementById("studentRole").value;
     const pkg = document.getElementById("studentPackage").value;
-    const imageInput = document.getElementById("studentImage");
-    const imageFile = imageInput.files[0];
+    const imageFile = document.getElementById("studentImage").files[0];
 
-    // व्हॅलिडेशन
     if (!name || !company || !role || !pkg || !imageFile) {
-        alert("कृपया सर्व रकाने भरा!");
+        alert("कृपया सर्व माहिती भरा आणि फोटो निवडा!");
         return;
     }
 
+    // FormData वापरणे आवश्यक आहे कारण आपण फाईल (image) पाठवत आहोत
     const formData = new FormData();
     formData.append("name", name);
     formData.append("company", company);
@@ -267,52 +262,49 @@ async function addPlacement() {
     formData.append("image", imageFile);
 
     try {
-        const addBtn = document.getElementById("addBtn");
-        addBtn.innerText = "Adding...";
-        addBtn.disabled = true;
-
         const response = await fetch(API_URL, {
             method: "POST",
-            body: formData
+            body: formData, // इथे Content-Type सेट करण्याची गरज नाही, FormData स्वतः करतो
         });
 
         if (response.ok) {
-            alert("Placement यशस्वीरित्या सेव्ह झाली!");
-            // फॉर्म रिसेट करा
-            document.getElementById("studentName").value = "";
-            document.getElementById("studentCompany").value = "";
-            document.getElementById("studentRole").value = "";
-            document.getElementById("studentPackage").value = "";
-            imageInput.value = "";
-            
-            fetchPlacements(); // लिस्ट अपडेट करा
+            alert("Placement यशस्वीरित्या ॲड झाली!");
+            clearInputs();
+            fetchPlacements(); // लिस्ट रिफ्रेश करा
         } else {
-            alert("काहीतरी चूक झाली!");
+            const err = await response.json();
+            alert("Error: " + err.error);
         }
     } catch (error) {
-        console.error("Error:", error);
-    } finally {
-        const addBtn = document.getElementById("addBtn");
-        addBtn.innerText = "Add Placement";
-        addBtn.disabled = false;
+        console.error("Error adding placement:", error);
     }
 }
 
-// 3. डिलीट फंक्शन
+// 3. Placement डिलीट करणे (DELETE)
 async function deletePlacement(id) {
-    if (!confirm("तुम्हाला खात्री आहे की हे रेकॉर्ड डिलीट करायचे आहे?")) return;
+    if (!confirm("तुम्हाला खात्री आहे की तुम्ही हे डिलीट करू इच्छिता?")) return;
 
     try {
         const response = await fetch(`${API_URL}/${id}`, {
-            method: "DELETE"
+            method: "DELETE",
         });
 
         if (response.ok) {
-            fetchPlacements();
+            alert("डिलीट झाले!");
+            fetchPlacements(); // लिस्ट रिफ्रेश करा
         }
     } catch (error) {
-        console.error("Delete error:", error);
+        console.error("Error deleting placement:", error);
     }
+}
+
+// इनपुट फिल्ड्स रिकामी करण्यासाठी
+function clearInputs() {
+    document.getElementById("studentName").value = "";
+    document.getElementById("studentCompany").value = "";
+    document.getElementById("studentRole").value = "";
+    document.getElementById("studentPackage").value = "";
+    document.getElementById("studentImage").value = "";
 }
 
 // ============================
