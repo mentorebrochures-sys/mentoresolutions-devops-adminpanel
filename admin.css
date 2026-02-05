@@ -396,6 +396,129 @@ td {
 .placement-card button:last-child {
   background: var(--red);
 }
+
+/* Placements Section Panel */
+.panel {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+/* Form Styling */
+.form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 30px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 6px;
+}
+
+.form input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    flex: 1;
+    min-width: 150px;
+}
+
+#addBtn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+#addBtn:hover {
+    background-color: #218838;
+}
+
+/* Headings and Rows Structure (Grid Layout) */
+.placements-headings, .placement-item {
+    display: grid;
+    grid-template-columns: 80px 1.5fr 1fr 1fr 1fr 100px;
+    align-items: center;
+    padding: 12px;
+    gap: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.placements-headings {
+    background-color: #343a40;
+    color: white;
+    border-radius: 4px 4px 0 0;
+    font-weight: bold;
+    text-align: left;
+}
+
+.heading {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+/* Data Cards/Rows */
+.placements-cards {
+    border: 1px solid #eee;
+    border-top: none;
+}
+
+.placement-item:hover {
+    background-color: #f8f9fa;
+}
+
+.placement-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%; /* फोटो गोल दिसावा म्हणून */
+    border: 1px solid #ddd;
+}
+
+.placement-item span {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+/* Delete Button */
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    transition: 0.3s;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* Responsive (Mobile साठी) */
+@media (max-width: 768px) {
+    .placements-headings {
+        display: none; /* मोबाईलवर हेडिंग लपवा */
+    }
+    .placement-item {
+        grid-template-columns: 1fr 1fr;
+        height: auto;
+        gap: 10px;
+        border: 1px solid #eee;
+        margin-bottom: 10px;
+        border-radius: 8px;
+    }
+    .form {
+        flex-direction: column;
+    }
+}
 /* ===============================
    RESPONSIVE (MOBILE)
 ================================ */
