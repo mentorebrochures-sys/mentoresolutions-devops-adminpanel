@@ -106,62 +106,66 @@ function editRow(btn) {
 
         if (!addBtn) return;
 
-        // 1. DATA LOAD KARNYASATHI FUNCTION
+        // --- 1. DISPLAY LOGIC (Database madhun data dakhavne) ---
         async function loadCertificates() {
             try {
                 const res = await fetch(API_URL);
                 const data = await res.json();
 
+                if (!Array.isArray(data)) return;
+
                 certificateTable.innerHTML = ""; // Table clear kara
 
                 data.forEach(cert => {
                     const row = document.createElement("tr");
+                    // Tujhya table structure nusar rows add karne
                     row.innerHTML = `
                         <td>
-                            <img src="${cert.image}" alt="Certificate" style="width: 100px; border-radius: 5px;">
+                            <img src="${cert.image}" alt="Certificate" style="width: 100px; height: auto; border-radius: 4px;">
                         </td>
                         <td>
-                            <button class="delete-btn" onclick="deleteCert(${cert.id})">Delete</button>
+                            <button type="button" class="delete-btn" onclick="deleteCert(${cert.id})">Delete</button>
                         </td>
                     `;
                     certificateTable.appendChild(row);
                 });
             } catch (err) {
-                console.error("Load Error:", err);
+                console.error("Data load karnyaat adthala:", err);
             }
         }
 
-        // 2. DELETE KARNYASATHI FUNCTION (Global window object var set kara lagte)
+        // --- 2. DELETE LOGIC (Database + Bucket madhun delete karne) ---
         window.deleteCert = async (id) => {
-            if (!confirm("Are you sure? Certificate and Image doghi delete hotil!")) return;
+            if (!confirm("Khatri aahe? Certificate kaamche nighun jail!")) return;
 
             try {
                 const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
                 if (res.ok) {
-                    alert("Deleted!");
-                    loadCertificates(); // List parat load kara
+                    loadCertificates(); // List refresh kara
+                } else {
+                    alert("Delete karta aale nahi.");
                 }
             } catch (err) {
-                alert("Delete karta aale nahi.");
+                console.error("Delete error:", err);
             }
         };
 
-        // 3. ADD/SAVE CERTIFICATE logic (Tuzach code thoda refine kela aahe)
+        // --- 3. CREATE LOGIC (Upload to Bucket + Save to DB) ---
         addBtn.onclick = async (e) => {
             e.preventDefault();
             const file = imageInput.files[0];
 
             if (!file) {
-                alert("File select kara!");
+                alert("Krupaya ek image select kara!");
                 return;
             }
 
             const formData = new FormData();
-            formData.append("image", file);
+            formData.append("image", file); // Backend 'multer' sathi 'image' key mahatvachi aahe
 
             try {
                 addBtn.disabled = true;
-                addBtn.innerText = "Uploading...";
+                addBtn.innerText = "Saving...";
 
                 const response = await fetch(API_URL, {
                     method: "POST",
@@ -171,21 +175,22 @@ function editRow(btn) {
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert("Success! Supabase madhe store jhale.");
-                    imageInput.value = "";
-                    loadCertificates(); // Refresh table
+                    alert("Certificate successfully save jhale!");
+                    imageInput.value = ""; // Input clear kara
+                    loadCertificates(); // Table refresh kara
                 } else {
-                    alert("Error: " + (result.error || "Unknown Error"));
+                    alert("Error: " + (result.error || "Upload fail jhale"));
                 }
             } catch (err) {
-                alert("Server error!");
+                console.error("Fetch error:", err);
+                alert("Backend connect hot nahiye!");
             } finally {
                 addBtn.disabled = false;
                 addBtn.innerText = "Save Certificate";
             }
         };
 
-        // Page load jhalyavar data dakhva
+        // Page ughadlya ughadlya data load kara
         loadCertificates();
     });
 })();
