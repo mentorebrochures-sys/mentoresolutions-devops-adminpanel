@@ -231,6 +231,7 @@ async function fetchPlacements() {
                 <span>${item.role}</span>
                 <span>${item.company}</span>
                 <span>${item.pkg}</span>
+                <button onclick="editPlacement('${item.id}')" class="edit-btn">Edit</button>
                 <button onclick="deletePlacement('${item.id}')" class="delete-btn">Delete</button>
             `;
             container.appendChild(row);
