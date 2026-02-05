@@ -97,6 +97,7 @@ function editRow(btn) {
 // ===============================
 
 (() => {
+    // BASE_URL define kela asava (e.g., const BASE_URL = "http://localhost:5000")
     const API_URL = `${BASE_URL}/api/certificates`;
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -106,7 +107,7 @@ function editRow(btn) {
 
         if (!addBtn) return;
 
-        // --- 1. DISPLAY LOGIC (Database madhun data dakhavne) ---
+        // --- 1. DISPLAY LOGIC ---
         async function loadCertificates() {
             try {
                 const res = await fetch(API_URL);
@@ -114,17 +115,18 @@ function editRow(btn) {
 
                 if (!Array.isArray(data)) return;
 
-                certificateTable.innerHTML = ""; // Table clear kara
+                certificateTable.innerHTML = ""; 
 
                 data.forEach(cert => {
                     const row = document.createElement("tr");
-                    // Tujhya table structure nusar rows add karne
+                    
+                    // HTML structure madhe badal na karta fakt data insert karne
                     row.innerHTML = `
                         <td>
                             <img src="${cert.image}" alt="Certificate" style="width: 100px; height: auto; border-radius: 4px;">
                         </td>
                         <td>
-                            <button type="button" class="delete-btn" onclick="deleteCert(${cert.id})">Delete</button>
+                            <button type="button" onclick="deleteCert(${cert.id})">Delete</button>
                         </td>
                     `;
                     certificateTable.appendChild(row);
@@ -134,23 +136,26 @@ function editRow(btn) {
             }
         }
 
-        // --- 2. DELETE LOGIC (Database + Bucket madhun delete karne) ---
+        // --- 2. DELETE LOGIC ---
+        // Global function banavli aahe jya mule HTML madhun 'onclick' kaam karel
         window.deleteCert = async (id) => {
             if (!confirm("Khatri aahe? Certificate kaamche nighun jail!")) return;
 
             try {
                 const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
                 if (res.ok) {
-                    loadCertificates(); // List refresh kara
+                    loadCertificates(); 
                 } else {
-                    alert("Delete karta aale nahi.");
+                    const errorData = await res.json();
+                    alert("Delete karta aale nahi: " + errorData.error);
                 }
             } catch (err) {
                 console.error("Delete error:", err);
+                alert("Server error mule delete jhale nahi.");
             }
         };
 
-        // --- 3. CREATE LOGIC (Upload to Bucket + Save to DB) ---
+        // --- 3. CREATE LOGIC ---
         addBtn.onclick = async (e) => {
             e.preventDefault();
             const file = imageInput.files[0];
@@ -161,7 +166,7 @@ function editRow(btn) {
             }
 
             const formData = new FormData();
-            formData.append("image", file); // Backend 'multer' sathi 'image' key mahatvachi aahe
+            formData.append("image", file); 
 
             try {
                 addBtn.disabled = true;
@@ -176,8 +181,8 @@ function editRow(btn) {
 
                 if (response.ok) {
                     alert("Certificate successfully save jhale!");
-                    imageInput.value = ""; // Input clear kara
-                    loadCertificates(); // Table refresh kara
+                    imageInput.value = ""; 
+                    loadCertificates(); 
                 } else {
                     alert("Error: " + (result.error || "Upload fail jhale"));
                 }
@@ -190,7 +195,6 @@ function editRow(btn) {
             }
         };
 
-        // Page ughadlya ughadlya data load kara
         loadCertificates();
     });
 })();
