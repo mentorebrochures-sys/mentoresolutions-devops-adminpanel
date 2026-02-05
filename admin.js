@@ -206,167 +206,156 @@ function editRow(btn) {
 
 (() => {
     const PLACE_API = `${BASE_URL}/api/placements`;
-  
-  let editingPlaceId = null;
+    let editingPlaceId = null;
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const placementsContainer = document.getElementById("placementsContainer");
-    const addBtn = document.getElementById("addBtn");
+    document.addEventListener("DOMContentLoaded", () => {
+        const placementsContainer = document.getElementById("placementsContainer");
+        const addBtn = document.getElementById("addBtn");
 
-    if (!placementsContainer || !addBtn) return;
+        if (!placementsContainer || !addBtn) return;
 
-    // ------------------------------
-    // 1. Data Load Karne (GET)
-    // ------------------------------
-    async function loadPlacements() {
-      try {
-        const res = await fetch(PLACE_API);
-        const data = await res.json();
-        placementsContainer.innerHTML = "";
+        // --- 1. Data Load Karne (GET) ---
+        async function loadPlacements() {
+            try {
+                const res = await fetch(PLACE_API);
+                const data = await res.json();
+                placementsContainer.innerHTML = "";
 
-        if (!data || data.error || !data.length) {
-          placementsContainer.innerHTML = "<p style='text-align:center; padding:20px;'>No placements found.</p>";
-          return;
+                if (!data || data.error || !data.length) {
+                    placementsContainer.innerHTML = "<p style='text-align:center; padding:20px;'>No placements found.</p>";
+                    return;
+                }
+
+                data.forEach(p => createPlacementCard(p));
+            } catch (err) {
+                console.error("Error loading placements:", err);
+            }
         }
 
-        data.forEach(p => createPlacementCard(p));
-      } catch (err) {
-        console.error("Error loading placements:", err);
-      }
-    }
+        // --- 2. Card Design (Backend chya 'pkg' column nusar) ---
+        function createPlacementCard(p) {
+            const card = document.createElement("div");
+            card.className = "placement-card";
+            card.dataset.id = p.id;
 
-    // ------------------------------
-    // 2. Card Design Banvane
-    // ------------------------------
-    function createPlacementCard(p) {
-      const card = document.createElement("div");
-      card.className = "placement-card";
-      card.dataset.id = p.id;
+            // Note: Database madhun yetana 'p.pkg' asel
+            card.innerHTML = `
+                <div class="cell image">
+                    <img class="placement-img" src="${p.image}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+                </div>
+                <div class="cell placement-name">${p.name}</div>
+                <div class="cell placement-role">${p.role}</div>
+                <div class="cell placement-company">${p.company}</div>
+                <div class="cell placement-package">${p.pkg || p.package}</div> 
+                <div class="cell actions">
+                    <button type="button" class="edit" style="background:#ffc107; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; margin-right:5px;">Edit</button>
+                    <button type="button" class="delete" style="background:#dc3545; color:#fff; border:none; border-radius:4px; padding:5px 10px; cursor:pointer;">Delete</button>
+                </div>
+            `;
 
-      card.innerHTML = `
-        <div class="cell image">
-          <img class="placement-img" src="${p.image}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
-        </div>
-        <div class="cell placement-name">${p.name}</div>
-        <div class="cell placement-role">${p.role}</div>
-        <div class="cell placement-company">${p.company}</div>
-        <div class="cell placement-package">${p.package}</div>
-        <div class="cell actions">
-          <button type="button" class="edit" style="background:#ffc107; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; margin-right:5px;">Edit</button>
-          <button type="button" class="delete" style="background:#dc3545; color:#fff; border:none; border-radius:4px; padding:5px 10px; cursor:pointer;">Delete</button>
-        </div>
-      `;
-
-      card.querySelector(".edit").onclick = () => editPlacement(p);
-      card.querySelector(".delete").onclick = () => deletePlacement(p.id);
-      placementsContainer.appendChild(card);
-    }
-
-    // ------------------------------
-    // 3. Add / Update Logic (POST / PUT)
-    // ------------------------------
-    addBtn.addEventListener("click", async (e) => {
-      e.preventDefault();
-      
-      const name = document.getElementById("studentName").value.trim();
-      const company = document.getElementById("studentCompany").value.trim();
-      const role = document.getElementById("studentRole").value.trim();
-      const pack = document.getElementById("studentPackage").value.trim();
-      const imgInput = document.getElementById("studentImage");
-      const file = imgInput.files[0];
-
-      if (!name || !company || !role || !pack) {
-        alert("Please fill all fields");
-        return;
-      }
-
-      // FormData vapra mhanje Multer la file milel
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("company", company);
-      formData.append("role", role);
-      formData.append("package", pack);
-      if (file) formData.append("image", file);
-
-      try {
-        addBtn.disabled = true;
-        addBtn.innerText = "Processing...";
-
-        let url = PLACE_API;
-        let method = "POST";
-
-        if (editingPlaceId) {
-          url = `${PLACE_API}/${editingPlaceId}`;
-          method = "PUT";
+            card.querySelector(".edit").onclick = () => editPlacement(p);
+            card.querySelector(".delete").onclick = () => deletePlacement(p.id);
+            placementsContainer.appendChild(card);
         }
 
-        const res = await fetch(url, {
-          method: method,
-          body: formData // JSON stringify garaj nahi, FormData direct pathva
+        // --- 3. Add / Update Logic (POST / PUT) ---
+        addBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById("studentName").value.trim();
+            const company = document.getElementById("studentCompany").value.trim();
+            const role = document.getElementById("studentRole").value.trim();
+            const pack = document.getElementById("studentPackage").value.trim();
+            const imgInput = document.getElementById("studentImage");
+            const file = imgInput.files[0];
+
+            if (!name || !company || !role || !pack) {
+                alert("Please fill all fields");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("name", name);
+            formData.append("company", company);
+            formData.append("role", role);
+            formData.append("pkg", pack); // Controller 'pkg' expect kartoy, mhanun 'pkg' vapra
+            if (file) formData.append("image", file);
+
+            try {
+                addBtn.disabled = true;
+                addBtn.innerText = "Processing...";
+
+                let url = PLACE_API;
+                let method = "POST";
+
+                if (editingPlaceId) {
+                    url = `${PLACE_API}/${editingPlaceId}`;
+                    method = "PUT";
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    body: formData 
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    alert(editingPlaceId ? "Placement Updated!" : "Placement Added!");
+                    resetForm();
+                    loadPlacements();
+                } else {
+                    alert("Error: " + (result.error || "Failed to save"));
+                }
+            } catch (err) {
+                console.error("Save error:", err);
+                alert("Server error!");
+            } finally {
+                addBtn.disabled = false;
+                addBtn.innerText = editingPlaceId ? "Update Placement" : "Add Placement";
+            }
         });
 
-        const result = await res.json();
-
-        if (res.ok) {
-          alert(editingPlaceId ? "Placement Updated!" : "Placement Added!");
-          resetForm();
-          loadPlacements();
-        } else {
-          alert("Error: " + (result.error || "Failed to save"));
+        // --- 4. Edit Function ---
+        function editPlacement(p) {
+            editingPlaceId = p.id;
+            document.getElementById("studentName").value = p.name;
+            document.getElementById("studentCompany").value = p.company;
+            document.getElementById("studentRole").value = p.role;
+            document.getElementById("studentPackage").value = p.pkg || p.package;
+            
+            addBtn.innerText = "Update Placement";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-      } catch (err) {
-        console.error("Save error:", err);
-        alert("Server error!");
-      } finally {
-        addBtn.disabled = false;
-        addBtn.innerText = editingPlaceId ? "Update Placement" : "Add Placement";
-      }
+
+        // --- 5. Delete Function ---
+        async function deletePlacement(id) {
+            if (!confirm("Are you sure? Image and Data both will be deleted from Supabase!")) return;
+            
+            try {
+                const res = await fetch(`${PLACE_API}/${id}`, { method: "DELETE" });
+                if (res.ok) {
+                    loadPlacements();
+                } else {
+                    alert("Delete failed");
+                }
+            } catch (err) {
+                console.error("Delete error:", err);
+            }
+        }
+
+        function resetForm() {
+            editingPlaceId = null;
+            document.getElementById("studentName").value = "";
+            document.getElementById("studentCompany").value = "";
+            document.getElementById("studentRole").value = "";
+            document.getElementById("studentPackage").value = "";
+            document.getElementById("studentImage").value = "";
+            addBtn.innerText = "Add Placement";
+        }
+
+        loadPlacements();
     });
-
-    // ------------------------------
-    // 4. Edit Function
-    // ------------------------------
-    function editPlacement(p) {
-      editingPlaceId = p.id;
-      document.getElementById("studentName").value = p.name;
-      document.getElementById("studentCompany").value = p.company;
-      document.getElementById("studentRole").value = p.role;
-      document.getElementById("studentPackage").value = p.package;
-      
-      addBtn.innerText = "Update Placement";
-      window.scrollTo(0, 0); // Form kade screen scroll kara
-    }
-
-    // ------------------------------
-    // 5. Delete Function
-    // ------------------------------
-    async function deletePlacement(id) {
-      if (!confirm("Are you sure you want to delete this?")) return;
-      
-      try {
-        const res = await fetch(`${PLACE_API}/${id}`, { method: "DELETE" });
-        if (res.ok) {
-          loadPlacements();
-        } else {
-          alert("Delete failed");
-        }
-      } catch (err) {
-        console.error("Delete error:", err);
-      }
-    }
-
-    function resetForm() {
-      editingPlaceId = null;
-      document.getElementById("studentName").value = "";
-      document.getElementById("studentCompany").value = "";
-      document.getElementById("studentRole").value = "";
-      document.getElementById("studentPackage").value = "";
-      document.getElementById("studentImage").value = "";
-      addBtn.innerText = "Add Placement";
-    }
-
-    loadPlacements();
-  });
 })();
 
 // ============================
