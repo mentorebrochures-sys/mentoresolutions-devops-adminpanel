@@ -206,21 +206,26 @@ function editRow(btn) {
 
 (() => {
     const PLACE_API = `${BASE_URL}/api/placements`;
-    let editingPlaceId = null;
+    let editingId = null; 
 
     document.addEventListener("DOMContentLoaded", () => {
-        const placementsContainer = document.getElementById("placementsContainer");
         const addBtn = document.getElementById("addBtn");
+        const placementsContainer = document.getElementById("placementsContainer");
 
-        if (!placementsContainer || !addBtn) return;
+        // Input Fields
+        const nameInput = document.getElementById("studentName");
+        const companyInput = document.getElementById("studentCompany");
+        const roleInput = document.getElementById("studentRole");
+        const pkgInput = document.getElementById("studentPackage");
+        const imageInput = document.getElementById("studentImage");
 
-        // --- 1. Data Load Karne ---
+        if (!addBtn || !placementsContainer) return;
+
+        // --- 1. DISPLAY LOGIC (Read) ---
         async function loadPlacements() {
             try {
                 const res = await fetch(PLACE_API);
-                if (!res.ok) throw new Error("Failed to fetch data");
                 const data = await res.json();
-                
                 placementsContainer.innerHTML = "";
 
                 if (!data || data.length === 0) {
@@ -228,129 +233,118 @@ function editRow(btn) {
                     return;
                 }
 
-                data.forEach(p => createPlacementCard(p));
+                data.forEach(p => {
+                    const card = document.createElement("div");
+                    card.className = "placement-card"; // Tujha original class
+                    
+                    card.innerHTML = `
+                        <div class="cell image">
+                            <img src="${p.image}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+                        </div>
+                        <div class="cell placement-name">${p.name}</div>
+                        <div class="cell placement-role">${p.role}</div>
+                        <div class="cell placement-company">${p.company}</div>
+                        <div class="cell placement-package">${p.pkg}</div>
+                        <div class="cell actions">
+                            <button type="button" class="edit" onclick='populateEdit(${JSON.stringify(p)})' style="background:#ffc107; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; margin-right:5px;">Edit</button>
+                            <button type="button" class="delete" onclick="deletePlacement(${p.id})" style="background:#dc3545; color:#fff; border:none; border-radius:4px; padding:5px 10px; cursor:pointer;">Delete</button>
+                        </div>
+                    `;
+                    placementsContainer.appendChild(card);
+                });
             } catch (err) {
-                console.error("Load error:", err);
+                console.error("Data load error:", err);
             }
         }
 
-        // --- 2. Card Design ---
-        function createPlacementCard(p) {
-            const card = document.createElement("div");
-            card.className = "placement-card";
+        // --- 2. EDIT POPULATE (Data form madhe bharne) ---
+        window.populateEdit = (p) => {
+            editingId = p.id;
+            nameInput.value = p.name;
+            companyInput.value = p.company;
+            roleInput.value = p.role;
+            pkgInput.value = p.pkg;
             
-            // Database madhun column names 'pkg' aslyas te handle karne
-            const displayPackage = p.pkg || p.package || "N/A";
+            addBtn.innerText = "Update Placement";
+            addBtn.style.background = "#28a745"; // Color badla jene karun samjel Edit mode aahe
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
 
-            card.innerHTML = `
-                <div class="cell image">
-                    <img class="placement-img" src="${p.image}" alt="${p.name}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
-                </div>
-                <div class="cell placement-name">${p.name}</div>
-                <div class="cell placement-role">${p.role}</div>
-                <div class="cell placement-company">${p.company}</div>
-                <div class="cell placement-package">${displayPackage}</div> 
-                <div class="cell actions">
-                    <button type="button" class="edit-btn" style="background:#ffc107; color:black; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; margin-right:5px;">Edit</button>
-                    <button type="button" class="delete-btn" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Delete</button>
-                </div>
-            `;
-
-            card.querySelector(".edit-btn").onclick = () => editPlacement(p);
-            card.querySelector(".delete-btn").onclick = () => deletePlacement(p.id);
-            placementsContainer.appendChild(card);
-        }
-
-        // --- 3. Add / Update Logic ---
+        // --- 3. CREATE & UPDATE (Save/Update Button) ---
         addBtn.onclick = async (e) => {
             e.preventDefault();
-            
-            const name = document.getElementById("studentName").value.trim();
-            const company = document.getElementById("studentCompany").value.trim();
-            const role = document.getElementById("studentRole").value.trim();
-            const pack = document.getElementById("studentPackage").value.trim();
-            const imgInput = document.getElementById("studentImage");
-            const file = imgInput.files[0];
 
-            if (!name || !company || !role || !pack) {
-                alert("Please fill all fields!");
+            const name = nameInput.value.trim();
+            const company = companyInput.value.trim();
+            const role = roleInput.value.trim();
+            const pkg = pkgInput.value.trim();
+            const file = imageInput.files[0];
+
+            if (!name || !company || !role || !pkg) {
+                alert("Please fill all text fields!");
                 return;
             }
 
-            // Important: FormData sathi 'pkg' key vapra jo backend expect kartoy
             const formData = new FormData();
             formData.append("name", name);
             formData.append("company", company);
             formData.append("role", role);
-            formData.append("pkg", pack); 
-            if (file) formData.append("image", file);
+            formData.append("pkg", pkg);
+            if (file) formData.append("image", file); // Jar navin file asel tarach add kara
 
             try {
                 addBtn.disabled = true;
                 addBtn.innerText = "Processing...";
 
-                const url = editingPlaceId ? `${PLACE_API}/${editingPlaceId}` : PLACE_API;
-                const method = editingPlaceId ? "PUT" : "POST";
+                const url = editingId ? `${PLACE_API}/${editingId}` : PLACE_API;
+                const method = editingId ? "PUT" : "POST";
 
-                const res = await fetch(url, {
+                const response = await fetch(url, {
                     method: method,
-                    body: formData // Content-Type header deu naka, browser automatic set karel
+                    body: formData
                 });
 
-                const result = await res.json();
-
-                if (res.ok) {
-                    alert(editingPlaceId ? "Placement Updated!" : "Placement Added successfully!");
+                if (response.ok) {
+                    alert(editingId ? "Placement Updated!" : "Placement Added Successfully!");
                     resetForm();
                     loadPlacements();
                 } else {
-                    alert("Error: " + (result.error || "Failed to save data"));
+                    const result = await response.json();
+                    alert("Error: " + (result.error || "Failed to save"));
                 }
             } catch (err) {
-                console.error("Save error:", err);
-                alert("Server error! Please check if backend is running.");
+                console.error("Fetch error:", err);
+                alert("Server error!");
             } finally {
                 addBtn.disabled = false;
-                addBtn.innerText = editingPlaceId ? "Update Placement" : "Add Placement";
+                addBtn.innerText = "Add Placement";
+                addBtn.style.background = ""; 
             }
         };
 
-        // --- 4. Edit Function ---
-        function editPlacement(p) {
-            editingPlaceId = p.id;
-            document.getElementById("studentName").value = p.name;
-            document.getElementById("studentCompany").value = p.company;
-            document.getElementById("studentRole").value = p.role;
-            document.getElementById("studentPackage").value = p.pkg || p.package || "";
-            
-            addBtn.innerText = "Update Placement";
-            document.querySelector('.form').scrollIntoView({ behavior: 'smooth' });
-        }
+        // --- 4. DELETE LOGIC ---
+        window.deletePlacement = async (id) => {
+            if (!confirm("Are you sure? Data will be removed from Database and Bucket!")) return;
 
-        // --- 5. Delete Function ---
-        async function deletePlacement(id) {
-            if (!confirm("Are you sure? This will remove data from Database and Storage.")) return;
-            
             try {
                 const res = await fetch(`${PLACE_API}/${id}`, { method: "DELETE" });
                 if (res.ok) {
                     loadPlacements();
                 } else {
-                    const errData = await res.json();
-                    alert("Delete failed: " + errData.error);
+                    alert("Delete failed.");
                 }
             } catch (err) {
                 console.error("Delete error:", err);
             }
-        }
+        };
 
         function resetForm() {
-            editingPlaceId = null;
-            document.getElementById("studentName").value = "";
-            document.getElementById("studentCompany").value = "";
-            document.getElementById("studentRole").value = "";
-            document.getElementById("studentPackage").value = "";
-            document.getElementById("studentImage").value = "";
+            editingId = null;
+            nameInput.value = "";
+            companyInput.value = "";
+            roleInput.value = "";
+            pkgInput.value = "";
+            imageInput.value = "";
             addBtn.innerText = "Add Placement";
         }
 
