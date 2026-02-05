@@ -215,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// 1. सर्व Placements मिळवून लिस्ट दाखवणे (GET)
+// 1. सर्व Placements मिळवून लिस्ट दाखवणे
 async function fetchPlacements() {
     try {
         const response = await fetch(API_URL);
@@ -230,10 +230,10 @@ async function fetchPlacements() {
             row.id = `row-${item.id}`; 
             row.innerHTML = `
                 <img src="${item.image}" alt="${item.name}">
-                <span>${item.name}</span>
-                <span>${item.role}</span>
-                <span>${item.company}</span>
-                <span>${item.pkg}</span>
+                <span class="data-field">${item.name}</span>
+                <span class="data-field">${item.role}</span>
+                <span class="data-field">${item.company}</span>
+                <span class="data-field">${item.pkg}</span>
                 <div class="action-buttons">
                     <button onclick="editPlacement('${item.id}')" class="edit-btn">Edit</button>
                     <button onclick="deletePlacement('${item.id}')" class="delete-btn">Delete</button>
@@ -246,58 +246,22 @@ async function fetchPlacements() {
     }
 }
 
-// 2. नवीन Placement ॲड करणे (POST)
-async function addPlacement() {
-    const name = document.getElementById("studentName").value;
-    const company = document.getElementById("studentCompany").value;
-    const role = document.getElementById("studentRole").value;
-    const pkg = document.getElementById("studentPackage").value;
-    const imageFile = document.getElementById("studentImage").files[0];
-
-    if (!name || !company || !role || !pkg || !imageFile) {
-        alert("कृपया सर्व माहिती भरा आणि फोटो निवडा!");
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("company", company);
-    formData.append("role", role);
-    formData.append("pkg", pkg);
-    formData.append("image", imageFile);
-
-    try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            body: formData,
-        });
-
-        if (response.ok) {
-            alert("Placement यशस्वीरित्या ॲड झाली!");
-            clearInputs();
-            fetchPlacements(); 
-        } else {
-            const err = await response.json();
-            alert("Error: " + err.error);
-        }
-    } catch (error) {
-        console.error("Error adding placement:", error);
-    }
-}
-
-// 3. ओळीतच एडिट मोड सुरू करणे (Inline Edit)
-function editPlacement(id) {
+// 2. EDIT MODE (ओळीत बदल करणे) - window object ला जोडले आहे जेणेकरून HTML ला सापडेल
+window.editPlacement = function(id) {
     const row = document.getElementById(`row-${id}`);
-    const spans = row.querySelectorAll('span');
-    
-    const name = spans[0].innerText;
-    const role = spans[1].innerText;
-    const company = spans[2].innerText;
-    const pkg = spans[3].innerText;
+    if (!row) return;
+
+    // span मधून जुना डेटा काढा
+    const fields = row.querySelectorAll('.data-field');
+    const name = fields[0].innerText;
+    const role = fields[1].innerText;
+    const company = fields[2].innerText;
+    const pkg = fields[3].innerText;
     const currentImg = row.querySelector('img').src;
 
+    // Row ला Input मध्ये बदला
     row.innerHTML = `
-        <img src="${currentImg}" style="opacity: 0.5; width: 50px; border-radius: 50%;">
+        <img src="${currentImg}" style="width: 50px; border-radius: 50%; opacity: 0.5;">
         <input type="text" id="edit-name-${id}" value="${name}" class="inline-edit-input">
         <input type="text" id="edit-role-${id}" value="${role}" class="inline-edit-input">
         <input type="text" id="edit-company-${id}" value="${company}" class="inline-edit-input">
@@ -307,10 +271,10 @@ function editPlacement(id) {
             <button onclick="fetchPlacements()" class="cancel-btn">Cancel</button>
         </div>
     `;
-}
+};
 
-// 4. अपडेट केलेला डेटा सेव्ह करणे (PUT)
-async function savePlacement(id) {
+// 3. SAVE UPDATED DATA
+window.savePlacement = async function(id) {
     const name = document.getElementById(`edit-name-${id}`).value;
     const role = document.getElementById(`edit-role-${id}`).value;
     const company = document.getElementById(`edit-company-${id}`).value;
@@ -324,40 +288,61 @@ async function savePlacement(id) {
         });
 
         if (response.ok) {
-            alert("अपडेट यशस्वी!");
+            alert("डेटा यशस्वीरित्या अपडेट झाला!");
             fetchPlacements();
         } else {
-            alert("अपडेट फेल झाले.");
+            alert("अपडेट करताना त्रुटी आली.");
         }
     } catch (error) {
         console.error("Save error:", error);
     }
-}
+};
 
-// 5. डिलीट करणे (DELETE)
-async function deletePlacement(id) {
-    if (!confirm("तुम्हाला खात्री आहे का?")) return;
+// 4. ADD NEW
+async function addPlacement() {
+    const name = document.getElementById("studentName").value;
+    const company = document.getElementById("studentCompany").value;
+    const role = document.getElementById("studentRole").value;
+    const pkg = document.getElementById("studentPackage").value;
+    const imageFile = document.getElementById("studentImage").files[0];
+
+    if (!name || !company || !role || !pkg || !imageFile) {
+        alert("सर्व माहिती भरा!");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("company", company);
+    formData.append("role", role);
+    formData.append("pkg", pkg);
+    formData.append("image", imageFile);
 
     try {
-        const response = await fetch(`${API_URL}/${id}`, {
-            method: "DELETE",
-        });
-
+        const response = await fetch(API_URL, { method: "POST", body: formData });
         if (response.ok) {
-            alert("डिलीट झाले!");
+            alert("Add यशस्वी!");
+            clearInputs();
             fetchPlacements();
         }
     } catch (error) {
-        console.error("Error deleting placement:", error);
+        console.error("Add error:", error);
     }
 }
 
+// 5. DELETE
+window.deletePlacement = async function(id) {
+    if (!confirm("Delete करायचे आहे का?")) return;
+    try {
+        const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+        if (response.ok) fetchPlacements();
+    } catch (error) {
+        console.error("Delete error:", error);
+    }
+};
+
 function clearInputs() {
-    document.getElementById("studentName").value = "";
-    document.getElementById("studentCompany").value = "";
-    document.getElementById("studentRole").value = "";
-    document.getElementById("studentPackage").value = "";
-    document.getElementById("studentImage").value = "";
+    document.querySelectorAll(".form input").forEach(input => input.value = "");
 }
 
 // ============================
