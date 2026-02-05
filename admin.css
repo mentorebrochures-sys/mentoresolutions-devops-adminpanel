@@ -581,6 +581,126 @@ td {
     justify-content: flex-start;
   }
 }
+
+/* Container आणि Row ची मांडणी */
+.placement-item {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr 1fr 1fr 160px; /* रकान्यांची अचूक विभागणी */
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    background: #fff;
+    border-bottom: 1px solid #edf2f7;
+    transition: background 0.2s;
+}
+
+.placement-item:hover {
+    background: #f8fafc;
+}
+
+/* इमेज स्टाईल */
+.placement-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+}
+
+/* ॲक्शन बटन्सचे कंटेनर */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+/* --- EDIT BUTTON --- */
+.edit-btn {
+    background-color: #f59e0b; /* प्रॉपर गोल्डन-येलो */
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+}
+
+.edit-btn:hover {
+    background-color: #d97706;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(217, 119, 6, 0.3);
+}
+
+/* --- SAVE BUTTON (Edit Mode मध्ये येते) --- */
+.save-btn {
+    background-color: #10b981; /* फ्रेश ग्रीन */
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.save-btn:hover {
+    background-color: #059669;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+/* --- CANCEL BUTTON (Edit Mode मध्ये येते) --- */
+.cancel-btn {
+    background-color: #64748b; /* मॅट ग्रे */
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancel-btn:hover {
+    background-color: #475569;
+}
+
+/* --- INLINE INPUTS (जेव्हा Edit क्लिक होते) --- */
+.inline-edit-input {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #f59e0b; /* एडिट मोडमध्ये पिवळी बॉर्डर */
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background-color: #fffbeb; /* फिकट पिवळा बॅकग्राउंड */
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.inline-edit-input:focus {
+    border-color: #d97706;
+    background-color: #fff;
+}
+
+/* --- DELETE BUTTON --- */
+.delete-btn {
+    background-color: #ef4444; /* ब्राइट रेड */
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.delete-btn:hover {
+    background-color: #dc2626;
+}
 /* ===============================
    TRAINING SECTION (Same as Placements)
 ================================ */
