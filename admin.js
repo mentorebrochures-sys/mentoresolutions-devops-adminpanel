@@ -204,153 +204,108 @@ function editRow(btn) {
 // Placement Section Admin JS
 // ------------------------------
 
-(() => {
-    const PLACE_API = `${BASE_URL}/api/placements`;
-    let editingId = null; 
+const API_URL = `${BASE_URL}/api/placements`; // तुझ्या सर्व्हरचा URL खात्री करून घे
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const addBtn = document.getElementById("addBtn");
-        const placementsContainer = document.getElementById("placementsContainer");
+document.addEventListener("DOMContentLoaded", () => {
+    fetchPlacements();
 
-        // Input Fields
-        const nameInput = document.getElementById("studentName");
-        const companyInput = document.getElementById("studentCompany");
-        const roleInput = document.getElementById("studentRole");
-        const pkgInput = document.getElementById("studentPackage");
-        const imageInput = document.getElementById("studentImage");
+    const addBtn = document.getElementById("addBtn");
+    addBtn.addEventListener("click", addPlacement);
+});
 
-        if (!addBtn || !placementsContainer) return;
+// 1. सर्व Placements मिळवून लिस्ट दाखवणे (GET)
+async function fetchPlacements() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
 
-        // --- 1. DISPLAY LOGIC (Read) ---
-        async function loadPlacements() {
-            try {
-                const res = await fetch(PLACE_API);
-                const data = await res.json();
-                placementsContainer.innerHTML = "";
+        const container = document.getElementById("placementsContainer");
+        container.innerHTML = ""; // जुनी लिस्ट क्लिअर करा
 
-                if (!data || data.length === 0) {
-                    placementsContainer.innerHTML = "<p style='text-align:center; padding:20px;'>No placements found.</p>";
-                    return;
-                }
+        data.forEach(item => {
+            const row = document.createElement("div");
+            row.className = "placement-item"; // तुझ्या CSS प्रमाणे बदलू शकतोस
+            row.innerHTML = `
+                <img src="${item.image}" alt="${item.name}" width="50">
+                <span>${item.name}</span>
+                <span>${item.role}</span>
+                <span>${item.company}</span>
+                <span>${item.pkg}</span>
+                <button onclick="deletePlacement('${item.id}')" class="delete-btn">Delete</button>
+            `;
+            container.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error fetching placements:", error);
+    }
+}
 
-                data.forEach(p => {
-                    const card = document.createElement("div");
-                    card.className = "placement-card"; // Tujha original class
-                    
-                    card.innerHTML = `
-                        <div class="cell image">
-                            <img src="${p.image}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
-                        </div>
-                        <div class="cell placement-name">${p.name}</div>
-                        <div class="cell placement-role">${p.role}</div>
-                        <div class="cell placement-company">${p.company}</div>
-                        <div class="cell placement-package">${p.pkg}</div>
-                        <div class="cell actions">
-                            <button type="button" class="edit" onclick='populateEdit(${JSON.stringify(p)})' style="background:#ffc107; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; margin-right:5px;">Edit</button>
-                            <button type="button" class="delete" onclick="deletePlacement(${p.id})" style="background:#dc3545; color:#fff; border:none; border-radius:4px; padding:5px 10px; cursor:pointer;">Delete</button>
-                        </div>
-                    `;
-                    placementsContainer.appendChild(card);
-                });
-            } catch (err) {
-                console.error("Data load error:", err);
-            }
+// 2. नवीन Placement ॲड करणे (POST)
+async function addPlacement() {
+    const name = document.getElementById("studentName").value;
+    const company = document.getElementById("studentCompany").value;
+    const role = document.getElementById("studentRole").value;
+    const pkg = document.getElementById("studentPackage").value;
+    const imageFile = document.getElementById("studentImage").files[0];
+
+    if (!name || !company || !role || !pkg || !imageFile) {
+        alert("कृपया सर्व माहिती भरा आणि फोटो निवडा!");
+        return;
+    }
+
+    // FormData वापरणे आवश्यक आहे कारण आपण फाईल (image) पाठवत आहोत
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("company", company);
+    formData.append("role", role);
+    formData.append("pkg", pkg);
+    formData.append("image", imageFile);
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            body: formData, // इथे Content-Type सेट करण्याची गरज नाही, FormData स्वतः करतो
+        });
+
+        if (response.ok) {
+            alert("Placement यशस्वीरित्या ॲड झाली!");
+            clearInputs();
+            fetchPlacements(); // लिस्ट रिफ्रेश करा
+        } else {
+            const err = await response.json();
+            alert("Error: " + err.error);
         }
+    } catch (error) {
+        console.error("Error adding placement:", error);
+    }
+}
 
-        // --- 2. EDIT POPULATE (Data form madhe bharne) ---
-        window.populateEdit = (p) => {
-            editingId = p.id;
-            nameInput.value = p.name;
-            companyInput.value = p.company;
-            roleInput.value = p.role;
-            pkgInput.value = p.pkg;
-            
-            addBtn.innerText = "Update Placement";
-            addBtn.style.background = "#28a745"; // Color badla jene karun samjel Edit mode aahe
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
+// 3. Placement डिलीट करणे (DELETE)
+async function deletePlacement(id) {
+    if (!confirm("तुम्हाला खात्री आहे की तुम्ही हे डिलीट करू इच्छिता?")) return;
 
-        // --- 3. CREATE & UPDATE (Save/Update Button) ---
-        addBtn.onclick = async (e) => {
-            e.preventDefault();
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: "DELETE",
+        });
 
-            const name = nameInput.value.trim();
-            const company = companyInput.value.trim();
-            const role = roleInput.value.trim();
-            const pkg = pkgInput.value.trim();
-            const file = imageInput.files[0];
-
-            if (!name || !company || !role || !pkg) {
-                alert("Please fill all text fields!");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append("name", name);
-            formData.append("company", company);
-            formData.append("role", role);
-            formData.append("pkg", pkg);
-            if (file) formData.append("image", file); // Jar navin file asel tarach add kara
-
-            try {
-                addBtn.disabled = true;
-                addBtn.innerText = "Processing...";
-
-                const url = editingId ? `${PLACE_API}/${editingId}` : PLACE_API;
-                const method = editingId ? "PUT" : "POST";
-
-                const response = await fetch(url, {
-                    method: method,
-                    body: formData
-                });
-
-                if (response.ok) {
-                    alert(editingId ? "Placement Updated!" : "Placement Added Successfully!");
-                    resetForm();
-                    loadPlacements();
-                } else {
-                    const result = await response.json();
-                    alert("Error: " + (result.error || "Failed to save"));
-                }
-            } catch (err) {
-                console.error("Fetch error:", err);
-                alert("Server error!");
-            } finally {
-                addBtn.disabled = false;
-                addBtn.innerText = "Add Placement";
-                addBtn.style.background = ""; 
-            }
-        };
-
-        // --- 4. DELETE LOGIC ---
-        window.deletePlacement = async (id) => {
-            if (!confirm("Are you sure? Data will be removed from Database and Bucket!")) return;
-
-            try {
-                const res = await fetch(`${PLACE_API}/${id}`, { method: "DELETE" });
-                if (res.ok) {
-                    loadPlacements();
-                } else {
-                    alert("Delete failed.");
-                }
-            } catch (err) {
-                console.error("Delete error:", err);
-            }
-        };
-
-        function resetForm() {
-            editingId = null;
-            nameInput.value = "";
-            companyInput.value = "";
-            roleInput.value = "";
-            pkgInput.value = "";
-            imageInput.value = "";
-            addBtn.innerText = "Add Placement";
+        if (response.ok) {
+            alert("डिलीट झाले!");
+            fetchPlacements(); // लिस्ट रिफ्रेश करा
         }
+    } catch (error) {
+        console.error("Error deleting placement:", error);
+    }
+}
 
-        loadPlacements();
-    });
-})();
+// इनपुट फिल्ड्स रिकामी करण्यासाठी
+function clearInputs() {
+    document.getElementById("studentName").value = "";
+    document.getElementById("studentCompany").value = "";
+    document.getElementById("studentRole").value = "";
+    document.getElementById("studentPackage").value = "";
+    document.getElementById("studentImage").value = "";
+}
 
 // ============================
 // COURSE JS (Vercel Ready)
