@@ -214,52 +214,55 @@ function editRow(btn) {
 
         if (!placementsContainer || !addBtn) return;
 
-        // --- 1. Data Load Karne (GET) ---
+        // --- 1. Data Load Karne ---
         async function loadPlacements() {
             try {
                 const res = await fetch(PLACE_API);
+                if (!res.ok) throw new Error("Failed to fetch data");
                 const data = await res.json();
+                
                 placementsContainer.innerHTML = "";
 
-                if (!data || data.error || !data.length) {
+                if (!data || data.length === 0) {
                     placementsContainer.innerHTML = "<p style='text-align:center; padding:20px;'>No placements found.</p>";
                     return;
                 }
 
                 data.forEach(p => createPlacementCard(p));
             } catch (err) {
-                console.error("Error loading placements:", err);
+                console.error("Load error:", err);
             }
         }
 
-        // --- 2. Card Design (Backend chya 'pkg' column nusar) ---
+        // --- 2. Card Design ---
         function createPlacementCard(p) {
             const card = document.createElement("div");
             card.className = "placement-card";
-            card.dataset.id = p.id;
+            
+            // Database madhun column names 'pkg' aslyas te handle karne
+            const displayPackage = p.pkg || p.package || "N/A";
 
-            // Note: Database madhun yetana 'p.pkg' asel
             card.innerHTML = `
                 <div class="cell image">
-                    <img class="placement-img" src="${p.image}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+                    <img class="placement-img" src="${p.image}" alt="${p.name}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
                 </div>
                 <div class="cell placement-name">${p.name}</div>
                 <div class="cell placement-role">${p.role}</div>
                 <div class="cell placement-company">${p.company}</div>
-                <div class="cell placement-package">${p.pkg || p.package}</div> 
+                <div class="cell placement-package">${displayPackage}</div> 
                 <div class="cell actions">
-                    <button type="button" class="edit" style="background:#ffc107; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; margin-right:5px;">Edit</button>
-                    <button type="button" class="delete" style="background:#dc3545; color:#fff; border:none; border-radius:4px; padding:5px 10px; cursor:pointer;">Delete</button>
+                    <button type="button" class="edit-btn" style="background:#ffc107; color:black; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; margin-right:5px;">Edit</button>
+                    <button type="button" class="delete-btn" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Delete</button>
                 </div>
             `;
 
-            card.querySelector(".edit").onclick = () => editPlacement(p);
-            card.querySelector(".delete").onclick = () => deletePlacement(p.id);
+            card.querySelector(".edit-btn").onclick = () => editPlacement(p);
+            card.querySelector(".delete-btn").onclick = () => deletePlacement(p.id);
             placementsContainer.appendChild(card);
         }
 
-        // --- 3. Add / Update Logic (POST / PUT) ---
-        addBtn.addEventListener("click", async (e) => {
+        // --- 3. Add / Update Logic ---
+        addBtn.onclick = async (e) => {
             e.preventDefault();
             
             const name = document.getElementById("studentName").value.trim();
@@ -270,51 +273,47 @@ function editRow(btn) {
             const file = imgInput.files[0];
 
             if (!name || !company || !role || !pack) {
-                alert("Please fill all fields");
+                alert("Please fill all fields!");
                 return;
             }
 
+            // Important: FormData sathi 'pkg' key vapra jo backend expect kartoy
             const formData = new FormData();
             formData.append("name", name);
             formData.append("company", company);
             formData.append("role", role);
-            formData.append("pkg", pack); // Controller 'pkg' expect kartoy, mhanun 'pkg' vapra
+            formData.append("pkg", pack); 
             if (file) formData.append("image", file);
 
             try {
                 addBtn.disabled = true;
                 addBtn.innerText = "Processing...";
 
-                let url = PLACE_API;
-                let method = "POST";
-
-                if (editingPlaceId) {
-                    url = `${PLACE_API}/${editingPlaceId}`;
-                    method = "PUT";
-                }
+                const url = editingPlaceId ? `${PLACE_API}/${editingPlaceId}` : PLACE_API;
+                const method = editingPlaceId ? "PUT" : "POST";
 
                 const res = await fetch(url, {
                     method: method,
-                    body: formData 
+                    body: formData // Content-Type header deu naka, browser automatic set karel
                 });
 
                 const result = await res.json();
 
                 if (res.ok) {
-                    alert(editingPlaceId ? "Placement Updated!" : "Placement Added!");
+                    alert(editingPlaceId ? "Placement Updated!" : "Placement Added successfully!");
                     resetForm();
                     loadPlacements();
                 } else {
-                    alert("Error: " + (result.error || "Failed to save"));
+                    alert("Error: " + (result.error || "Failed to save data"));
                 }
             } catch (err) {
                 console.error("Save error:", err);
-                alert("Server error!");
+                alert("Server error! Please check if backend is running.");
             } finally {
                 addBtn.disabled = false;
                 addBtn.innerText = editingPlaceId ? "Update Placement" : "Add Placement";
             }
-        });
+        };
 
         // --- 4. Edit Function ---
         function editPlacement(p) {
@@ -322,22 +321,23 @@ function editRow(btn) {
             document.getElementById("studentName").value = p.name;
             document.getElementById("studentCompany").value = p.company;
             document.getElementById("studentRole").value = p.role;
-            document.getElementById("studentPackage").value = p.pkg || p.package;
+            document.getElementById("studentPackage").value = p.pkg || p.package || "";
             
             addBtn.innerText = "Update Placement";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.querySelector('.form').scrollIntoView({ behavior: 'smooth' });
         }
 
         // --- 5. Delete Function ---
         async function deletePlacement(id) {
-            if (!confirm("Are you sure? Image and Data both will be deleted from Supabase!")) return;
+            if (!confirm("Are you sure? This will remove data from Database and Storage.")) return;
             
             try {
                 const res = await fetch(`${PLACE_API}/${id}`, { method: "DELETE" });
                 if (res.ok) {
                     loadPlacements();
                 } else {
-                    alert("Delete failed");
+                    const errData = await res.json();
+                    alert("Delete failed: " + errData.error);
                 }
             } catch (err) {
                 console.error("Delete error:", err);
