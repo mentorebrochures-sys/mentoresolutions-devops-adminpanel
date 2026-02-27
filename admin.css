@@ -236,10 +236,14 @@ body {
   border: 1px solid #ccc;
 }
 .form button {
-  background: var(--primary);
-  border: none;
-  cursor: pointer;
+    background: var(--primary);
+    border: none;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    cursor: pointer;
 }
+
 /* TABLE */
 table {
   width: 100%;
@@ -426,7 +430,8 @@ td {
 }
 
 #addBtn {
-    background-color: #28a745;
+    background: var(--primary);
+
     color: white;
     border: none;
     padding: 10px 20px;
@@ -910,3 +915,196 @@ td {
     justify-content: flex-start;
   }
 }
+
+
+/* =========================
+certificate section
+========================= */
+
+/* Certificate Section Styling */
+/* Main Container Styling */
+#certificate {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#certificate h2 {
+    color: #333;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    border-left: 5px solid #ff9800;
+    padding-left: 15px;
+}
+
+/* Form Section Styling */
+#certificate .form {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border: 1px dashed #ccc;
+}
+
+/* Custom File Input */
+#certImage {
+    flex: 1;
+    min-width: 250px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Save Certificate Button */
+#addCertBtn {
+    padding: 12px 25px;
+    background: var(--primary);
+
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(245, 124, 0, 0.3);
+}
+
+#addCertBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(245, 124, 0, 0.4);
+    filter: brightness(1.1);
+}
+
+#addCertBtn:active {
+    transform: translateY(0);
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #fff;
+}
+
+thead {
+    background-color: #222;
+    color: #fff;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+tbody tr:hover {
+    background-color: #fff9f0;
+}
+
+/* Image Preview Styling */
+#certificateTable img {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    transition: transform 0.3s ease;
+    cursor: zoom-in;
+}
+
+#certificateTable img:hover {
+    transform: scale(2.0);
+    position: relative;
+    z-index: 10;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Delete Button Modern Styling */
+/* या प्रकारे लिहा म्हणजे CSS नक्की लागू होईल */
+#certificateTable .delete-btn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(255, 77, 77, 0.2);
+    display: inline-block; /* हे महत्त्वाचे आहे */
+}
+
+#certificateTable .delete-btn:hover {
+    background-color: #e60000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(230, 0, 0, 0.3);
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+    #certificate .form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    #addCertBtn {
+        width: 100%;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    thead {
+        display: none; /* Hide header on mobile */
+    }
+
+    tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
+    }
+
+    td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    td:last-child {
+        border-bottom: none;
+    }
+
+    td::before {
+        content: attr(data-label); /* Important: requires data-label in HTML */
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        font-weight: bold;
+        text-align: left;
+        color: #555;
+    }
+}
+
+
+
