@@ -34,7 +34,7 @@
     <ul>
       <li onclick="showPanel('dashboard', this)"><i class="fa fa-chart-line"></i> Dashboard</li>
       <li onclick="showPanel('certificate', this)"><i class="fa fa-certificate"></i> Certificate</li>
-      <li onclick="showPanel('courses', this)"><i class="fa fa-book"></i> Courses</li>
+      <li onclick="showPanel('courses', this)"><i class="fa fa-book"></i> New Batch</li>
       <li onclick="showPanel('placements', this)"><i class="fa fa-user-graduate"></i> Placements</li>
       <li onclick="showPanel('training', this)"><i class="fa fa-chalkboard"></i> Training</li>
       <li onclick="showPanel('contact', this)"><i class="fa fa-envelope"></i> Contact</li>
@@ -71,7 +71,7 @@
 
       <div class="form">
         <input type="file" id="certImage" accept="image/*">
-        <button type="button" id="addCertBtn">Save Certificate</button>
+        <button type="button" id="addCertBtn">Add Certificate</button>
       </div>
       <table>
         <thead>
@@ -86,12 +86,12 @@
 
     <!-- COURSES ADMIN PANEL -->
     <section id="courses" class="panel">
-      <h2>Manage Courses</h2>
+      <h2>Manage New Batch</h2>
 
       <div class="form">
         <input id="courseDuration" placeholder="Total Duration">
         <input id="courseStartDate" type="date" placeholder="Start Date">
-        <button onclick="addCourse()">Add Course</button>
+        <button onclick="addCourse()">Add details</button>
       </div>
 
       <table>
@@ -140,7 +140,7 @@
   <div class="form">
     <input id="t1" placeholder="FontAwesome Icon (e.g. fas fa-cloud)">
     <input id="t2" placeholder="Training Name">
-    <button id="addBtnTraining" onclick="addTraining()">Add</button>
+    <button id="addBtnTraining" onclick="addTraining()">Add Training</button>
   </div>
 
   <div class="training-headings" style="display: flex; font-weight: bold; padding: 10px; border-bottom: 2px solid #ccc;">
