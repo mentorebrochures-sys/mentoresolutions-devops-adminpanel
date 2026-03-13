@@ -404,7 +404,7 @@ async function addCourse() {
     const batch_time = batchTimeInput.value.trim(); // Naveen Value
 
     if (!duration || !start_date || !batch_time) {
-        alert("Krupaya sarva mahiti bhara (Duration, Date ani Time)!");
+        alert("Please fill in all the details(Duration, Date, and Time)!");
         return;
     }
 
