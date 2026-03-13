@@ -132,14 +132,14 @@ function editRow(btn) {
                     certificateTable.appendChild(row);
                 });
             } catch (err) {
-                console.error("Data load karnyaat adthala:", err);
+                console.error("Error while loading data.", err);
             }
         }
 
         // --- 2. DELETE LOGIC ---
         // Global function banavli aahe jya mule HTML madhun 'onclick' kaam karel
         window.deleteCert = async (id) => {
-            if (!confirm("Khatri aahe? Certificate kaamche nighun jail!")) return;
+            if (!confirm("Are you sure? The certificate will be removed!")) return;
 
             try {
                 const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
@@ -147,11 +147,11 @@ function editRow(btn) {
                     loadCertificates(); 
                 } else {
                     const errorData = await res.json();
-                    alert("Delete karta aale nahi: " + errorData.error);
+                    alert("Unable to delete. " + errorData.error);
                 }
             } catch (err) {
                 console.error("Delete error:", err);
-                alert("Server error mule delete jhale nahi.");
+                alert("Could not delete due to a server error.");
             }
         };
 
@@ -161,7 +161,7 @@ function editRow(btn) {
             const file = imageInput.files[0];
 
             if (!file) {
-                alert("Krupaya ek image select kara!");
+                alert("Please select an image!");
                 return;
             }
 
@@ -180,15 +180,15 @@ function editRow(btn) {
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert("Certificate successfully save jhale!");
+                    alert("Certificate saved successfully!");
                     imageInput.value = ""; 
                     loadCertificates(); 
                 } else {
-                    alert("Error: " + (result.error || "Upload fail jhale"));
+                    alert("Error: " + (result.error || "Upload fail"));
                 }
             } catch (err) {
                 console.error("Fetch error:", err);
-                alert("Backend connect hot nahiye!");
+                alert("Unable to connect to the backend!");
             } finally {
                 addBtn.disabled = false;
                 addBtn.innerText = "Save Certificate";
@@ -288,10 +288,10 @@ window.savePlacement = async function(id) {
         });
 
         if (response.ok) {
-            alert("डेटा यशस्वीरित्या अपडेट झाला!");
+            alert("Data updated successfully!");
             fetchPlacements();
         } else {
-            alert("अपडेट करताना त्रुटी आली.");
+            alert("An error occurred while updating.");
         }
     } catch (error) {
         console.error("Save error:", error);
@@ -307,7 +307,7 @@ async function addPlacement() {
     const imageFile = document.getElementById("studentImage").files[0];
 
     if (!name || !company || !role || !pkg || !imageFile) {
-        alert("सर्व माहिती भरा!");
+        alert("Fill in all information!");
         return;
     }
 
@@ -321,7 +321,7 @@ async function addPlacement() {
     try {
         const response = await fetch(API_URL, { method: "POST", body: formData });
         if (response.ok) {
-            alert("Add यशस्वी!");
+            alert("Add successful!");
             clearInputs();
             fetchPlacements();
         }
@@ -332,7 +332,7 @@ async function addPlacement() {
 
 // 5. DELETE
 window.deletePlacement = async function(id) {
-    if (!confirm("Delete करायचे आहे का?")) return;
+    if (!confirm("Do you want to delete this?")) return;
     try {
         const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
         if (response.ok) fetchPlacements();
@@ -475,7 +475,7 @@ function editCourse(btn) {
 // 4. DATA DELETE KARNE
 // ===============================
 async function deleteCourse(id) {
-    if (!confirm("Haa course delete karaycha ka?")) return;
+    if (!confirm("Do you want to delete this batch timing details?")) return;
     
     try {
         const res = await fetch(`${COURSE_API}/${id}`, { method: "DELETE" });
@@ -692,7 +692,7 @@ async function addTraining() {
             nameInput.value = "";
             loadTrainings(); // Refresh list
         } else {
-            alert("Database madhe save karta ale nahi.");
+            alert("Could not save to the database.");
         }
     } catch (err) {
         console.error("Add error:", err);
@@ -704,7 +704,7 @@ async function addTraining() {
 
 // 3. DELETE KARNE
 async function deleteTraining(id) {
-    if (!confirm("Hee training delete karaychi ka?")) return;
+    if (!confirm("Do you want to delete this training?")) return;
     try {
         const res = await fetch(`${TRAINING_API}/${id}`, { method: "DELETE" });
         if (res.ok) loadTrainings();
