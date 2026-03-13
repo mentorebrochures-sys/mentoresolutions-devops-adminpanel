@@ -346,14 +346,14 @@ function clearInputs() {
 }
 
 // ============================
-// COURSE JS (Vercel Ready)
+// COURSE JS (Vercel Ready - Updated with Batch Time)
 // ============================
 
 const COURSE_API = `${BASE_URL}/api/courses`;
 let editingCourseId = null;
 
 // ===============================
-// 1. DATA LOAD KARNE
+// 1. DATA LOAD KARNE (Table madhe Batch Time dakhavne)
 // ===============================
 async function loadCourses() {
     try {
@@ -365,7 +365,8 @@ async function loadCourses() {
         table.innerHTML = "";
 
         if (!courses || courses.length === 0 || courses.error) {
-            table.innerHTML = `<tr><td colspan="3" style="text-align:center;">No courses found</td></tr>`;
+            // colspan="4" kela ahe karan column vadhla ahe
+            table.innerHTML = `<tr><td colspan="4" style="text-align:center;">No courses found</td></tr>`;
             return;
         }
 
@@ -375,6 +376,7 @@ async function loadCourses() {
             row.innerHTML = `
                 <td class="course-duration">${course.duration}</td>
                 <td class="course-startdate">${course.start_date}</td>
+                <td class="course-batchtime">${course.batch_time || "N/A"}</td>
                 <td>
                     <button class="action-btn edit" onclick="editCourse(this)" style="background:#ffc107; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Edit</button>
                     <button class="action-btn delete" onclick="deleteCourse('${course.id}')" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Delete</button>
@@ -393,19 +395,20 @@ async function loadCourses() {
 async function addCourse() {
     const durationInput = document.getElementById("courseDuration");
     const startDateInput = document.getElementById("courseStartDate");
+    const batchTimeInput = document.getElementById("courseBatchTime"); // Naveen Input
     
-    // HTML class badalnyachi garaj nahi, querySelector vaprun button sho dhuya
     const submitBtn = document.querySelector("#courses .form button");
 
     const duration = durationInput.value.trim();
     const start_date = startDateInput.value;
+    const batch_time = batchTimeInput.value.trim(); // Naveen Value
 
-    if (!duration || !start_date) {
-        alert("Krupaya sarva mahiti bhara!");
+    if (!duration || !start_date || !batch_time) {
+        alert("Krupaya sarva mahiti bhara (Duration, Date ani Time)!");
         return;
     }
 
-    const payload = { duration, start_date };
+    const payload = { duration, start_date, batch_time }; // Payload madhe batch_time add kela
 
     try {
         if (submitBtn) {
@@ -431,13 +434,14 @@ async function addCourse() {
         }
 
         if (response.ok) {
-            alert(editingCourseId ? "Course Updated!" : "Course Added to Supabase!");
+            alert(editingCourseId ? "Course Updated!" : "Course Added Successfully!");
             
             // Reset Form
             durationInput.value = "";
             startDateInput.value = "";
+            batchTimeInput.value = ""; // Form reset
             editingCourseId = null;
-            if (submitBtn) submitBtn.innerText = "Add Course";
+            if (submitBtn) submitBtn.innerText = "Add batch";
             
             loadCourses(); 
         } else {
@@ -461,6 +465,7 @@ function editCourse(btn) {
     
     document.getElementById("courseDuration").value = row.querySelector(".course-duration").innerText;
     document.getElementById("courseStartDate").value = row.querySelector(".course-startdate").innerText;
+    document.getElementById("courseBatchTime").value = row.querySelector(".course-batchtime").innerText; // Edit sathi time field
     
     const submitBtn = document.querySelector("#courses .form button");
     if (submitBtn) submitBtn.innerText = "Update Course";
@@ -485,7 +490,6 @@ async function deleteCourse(id) {
 }
 
 document.addEventListener("DOMContentLoaded", loadCourses);
-
 
 // ===============================
 // TRAINING SECTION ADMIN JS
