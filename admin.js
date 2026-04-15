@@ -872,3 +872,140 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
+// ===============================
+// PAP POLICY SECTION ADMIN JS
+// ===============================
+const PAP_API = `${BASE_URL}/api/pap-steps`;
+let editingPapId = null;
+
+// 1. डेटा लोड करून टेबलमध्ये दाखवणे
+async function loadPapSteps() {
+    const tableBody = document.getElementById("papTable");
+    if (!tableBody) return;
+
+    try {
+        const res = await fetch(PAP_API);
+        const data = await res.json();
+        
+        tableBody.innerHTML = ""; 
+
+        if (!data || data.length === 0 || data.error) {
+            tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No PAP steps found.</td></tr>";
+            return;
+        }
+
+        data.forEach(step => {
+            const row = document.createElement("tr");
+            row.dataset.id = step.id;
+            row.innerHTML = `
+                <td><strong>${step.title}</strong></td>
+                <td>${step.description}</td>
+                <td>
+                    <button class="action-btn edit" onclick="editPapStep(this)" style="background:#ffc107; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; margin-right:5px;">Edit</button>
+                    <button class="action-btn delete" onclick="deletePapStep('${step.id}')" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Delete</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (err) {
+        console.error("PAP Load Error:", err);
+    }
+}
+
+// 2. नवीन स्टेप ॲड किंवा अपडेट करणे
+async function addPapStep() {
+    const titleInput = document.getElementById("papTitle");
+    const descInput = document.getElementById("papDescription");
+    const submitBtn = document.getElementById("papSubmitBtn");
+
+    const title = titleInput.value.trim();
+    const description = descInput.value.trim();
+
+    if (!title || !description) {
+        alert("Please fill in both Title and Description!");
+        return;
+    }
+
+    // पेलोड मधून status काढून टाकले आहे
+    const payload = { title, description };
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Processing...";
+
+        let response;
+        if (editingPapId) {
+            // UPDATE (PUT)
+            response = await fetch(`${PAP_API}/${editingPapId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            // CREATE (POST)
+            response = await fetch(PAP_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (response.ok) {
+            alert(editingPapId ? "Step Updated! ✅" : "New Step Added! ✅");
+            resetPapForm();
+            loadPapSteps();
+        } else {
+            const errData = await response.json();
+            alert("Error: " + (errData.error || "Failed to save"));
+        }
+    } catch (error) {
+        console.error("PAP Save Error:", error);
+        alert("Server Connection Failed!");
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
+
+// 3. एडिट करण्यासाठी फॉर्ममध्ये डेटा भरणे
+function editPapStep(btn) {
+    const row = btn.closest("tr");
+    editingPapId = row.dataset.id;
+
+    document.getElementById("papTitle").value = row.cells[0].innerText;
+    document.getElementById("papDescription").value = row.cells[1].innerText;
+    
+    // Status सेट करणारे लॉजिक काढून टाकले आहे
+
+    document.getElementById("papSubmitBtn").innerText = "Update Step";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 4. स्टेप डिलीट करणे
+async function deletePapStep(id) {
+    if (!confirm("Are you sure you want to delete this policy step?")) return;
+
+    try {
+        const res = await fetch(`${PAP_API}/${id}`, { method: "DELETE" });
+        if (res.ok) {
+            loadPapSteps();
+        } else {
+            alert("Delete failed. Please try again.");
+        }
+    } catch (err) {
+        console.error("Delete Error:", err);
+    }
+}
+
+// 5. फॉर्म रिसेट करणे
+function resetPapForm() {
+    document.getElementById("papTitle").value = "";
+    document.getElementById("papDescription").value = "";
+    document.getElementById("papSubmitBtn").innerText = "Add Step";
+    editingPapId = null;
+}
+
+// 6. पेज लोड झाल्यावर डेटा लोड करणे
+document.addEventListener("DOMContentLoaded", loadPapSteps);
+
+
